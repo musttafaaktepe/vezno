@@ -13,9 +13,11 @@ const latInput = document.getElementById('lat');
 const lonInput = document.getElementById('lon');
 const radiusInput = document.getElementById('radius');
 const radiusValue = document.getElementById('radius-value');
+const sourceSelect = document.getElementById('source');
 const categorySelect = document.getElementById('category');
 const customTagField = document.getElementById('custom-tag-field');
 const customTagInput = document.getElementById('customTag');
+const customTagLabel = customTagField.querySelector('label');
 const placeInput = document.getElementById('place');
 const geocodeBtn = document.getElementById('geocode-btn');
 const geocodeResults = document.getElementById('geocode-results');
@@ -48,9 +50,33 @@ async function loadCategories() {
   categorySelect.appendChild(customOpt);
 }
 
-categorySelect.addEventListener('change', () => {
+function updateCustomTagField() {
   customTagField.hidden = categorySelect.value !== 'custom';
-});
+  if (sourceSelect.value === 'google') {
+    customTagLabel.textContent = 'Ozel Anahtar Kelime (orn: veteriner)';
+    customTagInput.placeholder = 'Orn: veteriner';
+  } else {
+    customTagLabel.textContent = 'Ozel OSM Etiketi (anahtar=deger)';
+    customTagInput.placeholder = 'Orn: amenity=veterinary';
+  }
+}
+
+categorySelect.addEventListener('change', updateCustomTagField);
+sourceSelect.addEventListener('change', updateCustomTagField);
+
+async function loadConfig() {
+  try {
+    const res = await fetch('/api/config');
+    const data = await res.json();
+    const googleOption = sourceSelect.querySelector('option[value="google"]');
+    if (!data.googleAvailable) {
+      googleOption.disabled = true;
+      googleOption.textContent = 'Google Places (API anahtari tanimli degil)';
+    }
+  } catch {
+    // config alinamazsa varsayilan (OSM) ile devam edilir
+  }
+}
 
 geocodeBtn.addEventListener('click', async () => {
   const q = placeInput.value.trim();
@@ -117,6 +143,7 @@ function renderResults(lat, lon, radius, results) {
       <div class="meta">${biz.address ? biz.address + ' &middot; ' : ''}${biz.distance} m uzaklikta</div>
       ${biz.phone ? `<div class="meta">Tel: ${biz.phone}</div>` : ''}
       ${biz.opening_hours ? `<div class="meta">Saatler: ${biz.opening_hours}</div>` : ''}
+      ${biz.rating ? `<div class="meta">Puan: ${biz.rating} / 5</div>` : ''}
     `;
     li.addEventListener('click', () => {
       map.setView([biz.lat, biz.lon], 17);
@@ -133,13 +160,14 @@ form.addEventListener('submit', async (e) => {
   const radius = parseInt(radiusInput.value, 10);
   const category = categorySelect.value;
   const customTag = customTagInput.value.trim();
+  const source = sourceSelect.value;
 
   if (Number.isNaN(lat) || Number.isNaN(lon)) {
     setStatus('Lutfen gecerli enlem/boylam girin.', true);
     return;
   }
 
-  const params = new URLSearchParams({ lat, lon, radius, category });
+  const params = new URLSearchParams({ lat, lon, radius, category, source });
   if (category === 'custom') params.set('customTag', customTag);
 
   setStatus('Isletmeler taraniyor...');
@@ -159,3 +187,5 @@ form.addEventListener('submit', async (e) => {
 });
 
 loadCategories();
+loadConfig();
+updateCustomTagField();
