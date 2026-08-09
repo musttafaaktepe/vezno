@@ -143,7 +143,7 @@ function renderResults(lat, lon, radius, results) {
       <div class="meta">${biz.address ? biz.address + ' &middot; ' : ''}${biz.distance} m uzaklikta</div>
       ${biz.phone ? `<div class="meta">Tel: ${biz.phone}</div>` : ''}
       ${biz.opening_hours ? `<div class="meta">Saatler: ${biz.opening_hours}</div>` : ''}
-      ${biz.rating ? `<div class="meta">Puan: ${biz.rating} / 5</div>` : ''}
+      ${biz.rating ? `<div class="meta">Puan: ${biz.rating} / 5${biz.ratingCount ? ` (${biz.ratingCount} yorum)` : ''}</div>` : ''}
     `;
     li.addEventListener('click', () => {
       map.setView([biz.lat, biz.lon], 17);

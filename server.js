@@ -11,7 +11,7 @@ const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
 const GOOGLE_NEARBY_URL = 'https://places.googleapis.com/v1/places:searchNearby';
 const GOOGLE_TEXT_SEARCH_URL = 'https://places.googleapis.com/v1/places:searchText';
 const GOOGLE_FIELD_MASK =
-  'places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.nationalPhoneNumber,places.currentOpeningHours.openNow';
+  'places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.nationalPhoneNumber,places.currentOpeningHours.openNow';
 const USER_AGENT = 'vezno-isletme-tarayici/1.0 (iletisim: musttafaaktepe@gmail.com)';
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY || '';
 
@@ -251,6 +251,7 @@ async function searchGoogle({ lat, lon, radius, categoryId, customTag }) {
               ? 'Simdi kapali'
               : '',
         rating: place.rating ?? null,
+        ratingCount: place.userRatingCount ?? null,
         distance: Math.round(haversineMeters(lat, lon, elLat, elLon)),
       };
     })
