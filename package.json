@@ -1,0 +1,16 @@
+{
+  "name": "vezno-isletme-tarayici",
+  "version": "1.0.0",
+  "description": "Koordinat ve yaricap girilerek secilen turdeki isletmeleri tarayip listeleyen uygulama",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
