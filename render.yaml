@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: vezno-isletme-tarayici
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: GOOGLE_PLACES_API_KEY
+        sync: false
