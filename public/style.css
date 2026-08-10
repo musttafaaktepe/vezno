@@ -157,6 +157,31 @@ button {
 #results-header {
   color: var(--muted);
   font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.export-buttons button {
+  width: auto;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  background: var(--accent-dark);
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.export-buttons button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 #results-list {

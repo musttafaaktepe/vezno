@@ -22,8 +22,13 @@ const placeInput = document.getElementById('place');
 const geocodeBtn = document.getElementById('geocode-btn');
 const geocodeResults = document.getElementById('geocode-results');
 const statusEl = document.getElementById('status');
-const resultsHeader = document.getElementById('results-header');
+const resultsCount = document.getElementById('results-count');
 const resultsList = document.getElementById('results-list');
+const exportExcelBtn = document.getElementById('export-excel');
+const exportPdfBtn = document.getElementById('export-pdf');
+
+let lastResults = [];
+let lastSearchMeta = null;
 
 function setStatus(message, isError = false) {
   statusEl.textContent = message || '';
@@ -129,8 +134,12 @@ function renderResults(lat, lon, radius, results) {
   radiusCircle = L.circle([lat, lon], { radius, color: '#4f9dfb', fillOpacity: 0.05 }).addTo(map);
   map.fitBounds(radiusCircle.getBounds());
 
-  resultsHeader.textContent = `${results.length} isletme bulundu`;
+  resultsCount.textContent = `${results.length} isletme bulundu`;
   resultsList.innerHTML = '';
+
+  lastResults = results;
+  exportExcelBtn.disabled = results.length === 0;
+  exportPdfBtn.disabled = results.length === 0;
 
   results.forEach((biz) => {
     const marker = L.marker([biz.lat, biz.lon]).addTo(map).bindPopup(`<b>${biz.name}</b><br>${biz.address || ''}`);
@@ -172,7 +181,9 @@ form.addEventListener('submit', async (e) => {
 
   setStatus('Isletmeler taraniyor...');
   resultsList.innerHTML = '';
-  resultsHeader.textContent = '';
+  resultsCount.textContent = '';
+  exportExcelBtn.disabled = true;
+  exportPdfBtn.disabled = true;
 
   try {
     const res = await fetch(`/api/search?${params.toString()}`);
@@ -180,10 +191,79 @@ form.addEventListener('submit', async (e) => {
     if (!res.ok) throw new Error(data.error || 'Hata olustu');
 
     renderResults(lat, lon, radius, data.results);
+    lastSearchMeta = {
+      lat,
+      lon,
+      radius,
+      category: categorySelect.selectedOptions[0]?.text || category,
+      source: sourceSelect.selectedOptions[0]?.text || source,
+    };
     setStatus(`Tamamlandi: ${data.count} sonuc.`);
   } catch (err) {
     setStatus(err.message, true);
   }
+});
+
+const TR_MAP = { ş: 's', Ş: 'S', ğ: 'g', Ğ: 'G', ı: 'i', İ: 'I', ö: 'o', Ö: 'O', ü: 'u', Ü: 'U', ç: 'c', Ç: 'C' };
+function stripTr(str) {
+  return String(str || '').replace(/[şŞğĞıİöÖüÜçÇ]/g, (ch) => TR_MAP[ch]);
+}
+
+exportExcelBtn.addEventListener('click', () => {
+  if (lastResults.length === 0) return;
+
+  const rows = lastResults.map((biz) => ({
+    'Isim': biz.name,
+    'Adres': biz.address || '',
+    'Mesafe (m)': biz.distance,
+    'Telefon': biz.phone || '',
+    'Puan': biz.rating ?? '',
+    'Yorum Sayisi': biz.ratingCount ?? '',
+    'Calisma Saatleri': biz.opening_hours || '',
+    'Enlem': biz.lat,
+    'Boylam': biz.lon,
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(rows);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Isletmeler');
+  XLSX.writeFile(workbook, `isletmeler-${Date.now()}.xlsx`);
+});
+
+exportPdfBtn.addEventListener('click', () => {
+  if (lastResults.length === 0) return;
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.setFontSize(14);
+  doc.text('Isletme Tarama Sonuclari', 14, 16);
+  doc.setFontSize(9);
+  if (lastSearchMeta) {
+    doc.text(
+      stripTr(
+        `Tur: ${lastSearchMeta.category} | Kaynak: ${lastSearchMeta.source} | Yaricap: ${lastSearchMeta.radius} m | Merkez: ${lastSearchMeta.lat.toFixed(5)}, ${lastSearchMeta.lon.toFixed(5)}`
+      ),
+      14,
+      22
+    );
+  }
+
+  doc.autoTable({
+    startY: 27,
+    head: [['Isim', 'Adres', 'Mesafe (m)', 'Telefon', 'Puan (Yorum)']],
+    body: lastResults.map((biz) => [
+      stripTr(biz.name),
+      stripTr(biz.address || ''),
+      String(biz.distance),
+      biz.phone || '',
+      biz.rating ? `${biz.rating}${biz.ratingCount ? ` (${biz.ratingCount})` : ''}` : '',
+    ]),
+    styles: { fontSize: 8 },
+    headStyles: { fillColor: [79, 157, 251] },
+  });
+
+  doc.save(`isletmeler-${Date.now()}.pdf`);
 });
 
 loadCategories();
