@@ -7,6 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
+const PHOTON_URL = 'https://photon.komoot.io/api/';
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
 const GOOGLE_NEARBY_URL = 'https://places.googleapis.com/v1/places:searchNearby';
 const GOOGLE_TEXT_SEARCH_URL = 'https://places.googleapis.com/v1/places:searchText';
@@ -56,33 +57,67 @@ app.get('/api/geocode', async (req, res) => {
   }
 
   try {
-    const url = new URL(NOMINATIM_URL);
-    url.searchParams.set('q', q);
-    url.searchParams.set('format', 'json');
-    url.searchParams.set('limit', '5');
-    url.searchParams.set('addressdetails', '1');
-
-    const response = await fetch(url, {
-      headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Nominatim hata dondu: ${response.status}`);
+    let results;
+    try {
+      results = await geocodeNominatim(q);
+    } catch (nominatimErr) {
+      console.error('Nominatim basarisiz, Photon deneniyor:', nominatimErr.message);
+      results = await geocodePhoton(q);
     }
-
-    const results = await response.json();
-    res.json(
-      results.map((r) => ({
-        display_name: r.display_name,
-        lat: parseFloat(r.lat),
-        lon: parseFloat(r.lon),
-      }))
-    );
+    res.json(results);
   } catch (err) {
-    console.error(err);
+    console.error('Geocode tamamen basarisiz:', err);
     res.status(502).json({ error: 'Konum aranirken bir hata olustu.' });
   }
 });
+
+async function geocodeNominatim(q) {
+  const url = new URL(NOMINATIM_URL);
+  url.searchParams.set('q', q);
+  url.searchParams.set('format', 'json');
+  url.searchParams.set('limit', '5');
+  url.searchParams.set('addressdetails', '1');
+
+  const response = await fetch(url, {
+    headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Nominatim hata dondu: ${response.status}`);
+  }
+
+  const results = await response.json();
+  return results.map((r) => ({
+    display_name: r.display_name,
+    lat: parseFloat(r.lat),
+    lon: parseFloat(r.lon),
+  }));
+}
+
+async function geocodePhoton(q) {
+  const url = new URL(PHOTON_URL);
+  url.searchParams.set('q', q);
+  url.searchParams.set('limit', '5');
+
+  const response = await fetch(url, {
+    headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Photon hata dondu: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return (data.features || []).map((f) => {
+    const p = f.properties || {};
+    const parts = [p.name, p.district, p.city, p.state, p.country].filter(Boolean);
+    return {
+      display_name: [...new Set(parts)].join(', '),
+      lat: f.geometry.coordinates[1],
+      lon: f.geometry.coordinates[0],
+    };
+  });
+}
 
 function haversineMeters(lat1, lon1, lat2, lon2) {
   const R = 6371000;
