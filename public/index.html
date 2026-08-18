@@ -8,6 +8,31 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div id="gate-overlay">
+    <div class="gate-card">
+      <h2>Google Places API Anahtari</h2>
+      <p>
+        Google Places kaynagini kullanmak icin kendi ucretsiz Google Maps API anahtarinizi girmeniz gerekiyor.
+        Anahtar sadece bu tarayicida saklanir, hicbir yere kaydedilmez.
+      </p>
+      <ol class="gate-steps">
+        <li><a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Google Cloud Console</a>'da yeni bir proje olusturun (ucretsiz).</li>
+        <li><a href="https://console.cloud.google.com/apis/library/places.googleapis.com" target="_blank" rel="noopener">Places API (New)</a> sayfasindan API'yi etkinlestirin.</li>
+        <li><a href="https://console.cloud.google.com/google/maps-apis/credentials" target="_blank" rel="noopener">Credentials</a> sayfasindan "Create Credentials &gt; API Key" ile anahtarinizi olusturun.</li>
+        <li>Anahtari asagiya yapistirin.</li>
+      </ol>
+      <div class="field">
+        <label for="gate-api-key">Google Places API Anahtari</label>
+        <input type="text" id="gate-api-key" placeholder="AIza..." />
+      </div>
+      <p id="gate-status" class="status"></p>
+      <div class="gate-actions">
+        <button type="button" id="gate-save">Kaydet ve Devam Et</button>
+        <button type="button" id="gate-skip">Google olmadan devam et (sadece OpenStreetMap)</button>
+      </div>
+    </div>
+  </div>
+
   <header class="topbar">
     <h1>Vezno Isletme Tarayici</h1>
     <p>Koordinat / mahalle ve yaricap girin, taramak istediginiz isletme turunu secin.</p>
@@ -47,6 +72,7 @@
             <option value="osm">OpenStreetMap (ucretsiz)</option>
             <option value="google">Google Places</option>
           </select>
+          <button type="button" id="manage-key-link" class="link-btn">Google API anahtarini yonet</button>
         </div>
 
         <div class="field">

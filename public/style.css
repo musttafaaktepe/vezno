@@ -213,3 +213,93 @@ button {
   color: var(--muted);
   font-size: 0.82rem;
 }
+
+#gate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 12, 18, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+#gate-overlay[hidden] {
+  display: none;
+}
+
+.gate-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 460px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.gate-card h2 {
+  margin: 0 0 10px;
+  font-size: 1.25rem;
+}
+
+.gate-card p {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.gate-steps {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  padding-left: 20px;
+  margin: 12px 0;
+}
+
+.gate-steps a {
+  color: var(--accent);
+}
+
+.gate-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+#gate-save {
+  background: var(--accent);
+  border: none;
+  color: #06121f;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 10px;
+}
+
+#gate-skip {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  padding: 8px;
+  font-size: 0.85rem;
+}
+
+#gate-save:hover,
+#gate-skip:hover {
+  filter: brightness(1.1);
+}
+
+.link-btn {
+  width: auto;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.78rem;
+  padding: 4px 0 0;
+  cursor: pointer;
+  text-decoration: underline;
+}

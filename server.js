@@ -46,7 +46,7 @@ app.get('/api/categories', (req, res) => {
 });
 
 app.get('/api/config', (req, res) => {
-  res.json({ googleAvailable: Boolean(GOOGLE_PLACES_API_KEY) });
+  res.json({ serverGoogleKeyAvailable: Boolean(GOOGLE_PLACES_API_KEY) });
 });
 
 // Mahalle / adres adini koordinata cevirir.
@@ -210,9 +210,9 @@ async function searchOsm({ lat, lon, radius, categoryId, customTag }) {
     .filter(Boolean);
 }
 
-async function searchGoogle({ lat, lon, radius, categoryId, customTag }) {
-  if (!GOOGLE_PLACES_API_KEY) {
-    const err = new Error('Google Places API anahtari sunucuda tanimli degil.');
+async function searchGoogle({ lat, lon, radius, categoryId, customTag, apiKey }) {
+  if (!apiKey) {
+    const err = new Error('Google Places icin bir API anahtari gerekli. Lutfen kendi anahtarinizi girin.');
     err.status = 400;
     throw err;
   }
@@ -255,7 +255,7 @@ async function searchGoogle({ lat, lon, radius, categoryId, customTag }) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
+      'X-Goog-Api-Key': apiKey,
       'X-Goog-FieldMask': GOOGLE_FIELD_MASK,
     },
     body: JSON.stringify(body),
@@ -309,7 +309,9 @@ app.get('/api/search', async (req, res) => {
   }
 
   try {
-    const params = { lat, lon, radius, categoryId, customTag };
+    const userGoogleKey = (req.headers['x-google-places-key'] || '').trim();
+    const apiKey = userGoogleKey || GOOGLE_PLACES_API_KEY;
+    const params = { lat, lon, radius, categoryId, customTag, apiKey };
     const results = (source === 'google' ? await searchGoogle(params) : await searchOsm(params)).sort(
       (a, b) => a.distance - b.distance
     );

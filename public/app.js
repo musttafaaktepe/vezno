@@ -26,9 +26,62 @@ const resultsCount = document.getElementById('results-count');
 const resultsList = document.getElementById('results-list');
 const exportExcelBtn = document.getElementById('export-excel');
 const exportPdfBtn = document.getElementById('export-pdf');
+const gateOverlay = document.getElementById('gate-overlay');
+const gateApiKeyInput = document.getElementById('gate-api-key');
+const gateStatus = document.getElementById('gate-status');
+const gateSaveBtn = document.getElementById('gate-save');
+const gateSkipBtn = document.getElementById('gate-skip');
+const manageKeyLink = document.getElementById('manage-key-link');
 
 let lastResults = [];
 let lastSearchMeta = null;
+let serverGoogleKeyAvailable = false;
+
+const GOOGLE_KEY_STORAGE = 'vezno_google_places_key';
+
+function getStoredGoogleKey() {
+  return (localStorage.getItem(GOOGLE_KEY_STORAGE) || '').trim();
+}
+
+function updateGoogleOptionState() {
+  const googleOption = sourceSelect.querySelector('option[value="google"]');
+  const hasKey = Boolean(getStoredGoogleKey()) || serverGoogleKeyAvailable;
+  googleOption.disabled = !hasKey;
+  googleOption.textContent = hasKey ? 'Google Places' : 'Google Places (API anahtari gerekli)';
+  if (!hasKey && sourceSelect.value === 'google') {
+    sourceSelect.value = 'osm';
+    updateCustomTagField();
+  }
+}
+
+function openGate() {
+  gateApiKeyInput.value = getStoredGoogleKey();
+  gateStatus.textContent = '';
+  gateStatus.classList.remove('error');
+  gateOverlay.hidden = false;
+}
+
+function closeGate() {
+  gateOverlay.hidden = true;
+}
+
+gateSaveBtn.addEventListener('click', () => {
+  const key = gateApiKeyInput.value.trim();
+  if (key.length < 20) {
+    gateStatus.textContent = 'Gecerli bir API anahtari girin.';
+    gateStatus.classList.add('error');
+    return;
+  }
+  localStorage.setItem(GOOGLE_KEY_STORAGE, key);
+  updateGoogleOptionState();
+  closeGate();
+});
+
+gateSkipBtn.addEventListener('click', () => {
+  closeGate();
+});
+
+manageKeyLink.addEventListener('click', openGate);
 
 function setStatus(message, isError = false) {
   statusEl.textContent = message || '';
@@ -73,13 +126,13 @@ async function loadConfig() {
   try {
     const res = await fetch('/api/config');
     const data = await res.json();
-    const googleOption = sourceSelect.querySelector('option[value="google"]');
-    if (!data.googleAvailable) {
-      googleOption.disabled = true;
-      googleOption.textContent = 'Google Places (API anahtari tanimli degil)';
-    }
+    serverGoogleKeyAvailable = Boolean(data.serverGoogleKeyAvailable);
   } catch {
-    // config alinamazsa varsayilan (OSM) ile devam edilir
+    serverGoogleKeyAvailable = false;
+  }
+  updateGoogleOptionState();
+  if (!getStoredGoogleKey()) {
+    openGate();
   }
 }
 
@@ -186,7 +239,12 @@ form.addEventListener('submit', async (e) => {
   exportPdfBtn.disabled = true;
 
   try {
-    const res = await fetch(`/api/search?${params.toString()}`);
+    const headers = {};
+    if (source === 'google') {
+      const key = getStoredGoogleKey();
+      if (key) headers['X-Google-Places-Key'] = key;
+    }
+    const res = await fetch(`/api/search?${params.toString()}`, { headers });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Hata olustu');
 
@@ -265,6 +323,10 @@ exportPdfBtn.addEventListener('click', () => {
 
   doc.save(`isletmeler-${Date.now()}.pdf`);
 });
+
+if (getStoredGoogleKey()) {
+  closeGate();
+}
 
 loadCategories();
 loadConfig();
