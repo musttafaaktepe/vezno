@@ -6,7 +6,7 @@ import { Section, Container } from "../_components/Section";
 
 export const metadata: Metadata = {
   title: "Paketler & Fiyatlar",
-  description: "OtoVizör Ekspertiz paket seçenekleri ve güncel fiyatları.",
+  description: "Cesa Oto Ekspertiz paket seçenekleri ve güncel fiyatları.",
 };
 
 export default async function PackagesPage() {

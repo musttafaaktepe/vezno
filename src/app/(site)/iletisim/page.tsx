@@ -7,7 +7,7 @@ import ContactForm from "./ContactForm";
 
 export const metadata: Metadata = {
   title: "İletişim",
-  description: "OtoVizör Ekspertiz ile iletişime geçin, sorularınızı bize iletin.",
+  description: "Cesa Oto Ekspertiz ile iletişime geçin, sorularınızı bize iletin.",
 };
 
 export default async function ContactPage() {

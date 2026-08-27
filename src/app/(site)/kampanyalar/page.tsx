@@ -6,7 +6,7 @@ import { Section, Container } from "../_components/Section";
 
 export const metadata: Metadata = {
   title: "Kampanyalar",
-  description: "OtoVizör Ekspertiz'in güncel kampanya ve fırsatlarını kaçırmayın.",
+  description: "Cesa Oto Ekspertiz'in güncel kampanya ve fırsatlarını kaçırmayın.",
 };
 
 export default async function CampaignsPage() {

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: {
-    default: "Yönetim Paneli | OtoVizör Ekspertiz",
-    template: "%s | OtoVizör Yönetim",
+    default: "Yönetim Paneli | Cesa Oto Ekspertiz",
+    template: "%s | Cesa Oto Ekspertiz Yönetim",
   },
   robots: { index: false, follow: false },
 };

@@ -41,11 +41,11 @@ export default function AdminShell({
         }`}
       >
         <div className="flex h-16 items-center gap-2.5 border-b border-slate-200 px-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-700 text-sm font-bold text-white">
-            OV
-          </div>
-          <div>
-            <p className="text-sm font-semibold leading-tight text-slate-900">OtoVizör</p>
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-700 text-sm font-bold text-white">CO</div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold leading-tight text-slate-900">
+              Cesa Oto Ekspertiz
+            </p>
             <p className="text-xs leading-tight text-slate-500">Yönetim Paneli</p>
           </div>
         </div>

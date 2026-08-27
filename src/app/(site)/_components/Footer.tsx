@@ -20,9 +20,7 @@ export default function Footer({
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-700 text-sm font-bold text-white">
-              OV
-            </span>
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-700 text-sm font-bold text-white">CO</span>
             <span className="text-base font-bold text-white">{settings.brandName}</span>
           </div>
           <p className="mt-4 text-sm leading-relaxed text-slate-400">{settings.tagline}</p>

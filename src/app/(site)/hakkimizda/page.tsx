@@ -6,7 +6,7 @@ import { Section, SectionHeading, Container } from "../_components/Section";
 
 export const metadata: Metadata = {
   title: "Hakkımızda",
-  description: "OtoVizör Ekspertiz'in hikayesi, değerleri ve bağımsız ekspertiz yaklaşımı.",
+  description: "Cesa Oto Ekspertiz'in hikayesi, değerleri ve bağımsız ekspertiz yaklaşımı.",
 };
 
 const VALUES = [

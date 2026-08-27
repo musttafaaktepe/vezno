@@ -4,7 +4,7 @@ import { Section, Container } from "../_components/Section";
 
 export const metadata: Metadata = {
   title: "Sık Sorulan Sorular",
-  description: "OtoVizör Ekspertiz hakkında merak edilen soruların cevapları.",
+  description: "Cesa Oto Ekspertiz hakkında merak edilen soruların cevapları.",
 };
 
 export default async function FaqPage() {
