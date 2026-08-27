@@ -3,7 +3,15 @@ import fs from "node:fs";
 import path from "node:path";
 import { seedDatabase } from "./seed";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+// On Vercel (and most serverless hosts) the deployed project directory is
+// read-only at runtime; only /tmp is writable, and it isn't shared or
+// persistent across instances or deploys. This keeps the app from crashing
+// there, but it's a stopgap: data can reset or differ between requests.
+// TODO: replace with a real hosted database (e.g. Turso or Postgres) before
+// relying on this for anything beyond a quick preview.
+const DATA_DIR = process.env.VERCEL
+  ? path.join("/tmp", "data")
+  : path.join(process.cwd(), "data");
 const DB_PATH = path.join(DATA_DIR, "app.db");
 const LOCK_PATH = path.join(DATA_DIR, ".init.lock");
 
