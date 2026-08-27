@@ -21,7 +21,7 @@ export default function LoginForm() {
           required
           autoComplete="email"
           className="rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
-          placeholder="ornek@otovizor.com.tr"
+          placeholder="ornek@cesaotoekspertiz.com"
         />
       </div>
       <div className="flex flex-col gap-1.5">

@@ -3,11 +3,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "OtoVizör Ekspertiz | Bağımsız Oto Ekspertiz Hizmeti",
-    template: "%s | OtoVizör Ekspertiz",
+    default: "Cesa Oto Ekspertiz | Bağımsız Oto Ekspertiz Hizmeti",
+    template: "%s | Cesa Oto Ekspertiz",
   },
   description:
-    "OtoVizör Ekspertiz ile aracınızı almadan önce gerçeği görün. 120'den fazla kontrol noktası, bağımsız raporlama ve online randevu.",
+    "Cesa Oto Ekspertiz ile aracınızı almadan önce gerçeği görün. 120'den fazla kontrol noktası, bağımsız raporlama ve online randevu.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -5,7 +5,7 @@ import BranchesGrid from "./BranchesGrid";
 
 export const metadata: Metadata = {
   title: "Şubelerimiz",
-  description: "OtoVizör Ekspertiz şubelerini ve iletişim bilgilerini inceleyin.",
+  description: "Cesa Oto Ekspertiz şubelerini ve iletişim bilgilerini inceleyin.",
 };
 
 export default async function BranchesPage() {

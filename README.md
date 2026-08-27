@@ -1,4 +1,4 @@
-# OtoVizör Ekspertiz
+# Cesa Oto Ekspertiz
 
 Pilot Garage benzeri, bağımsız bir oto ekspertiz markası için hazırlanmış özgün web sitesi ve
 içerik yönetim (admin) paneli. Next.js 16 (App Router) üzerinde, tek bir uygulama içinde hem

@@ -8,7 +8,7 @@ import ServiceIcon from "../_components/ServiceIcon";
 export const metadata: Metadata = {
   title: "Hizmetlerimiz",
   description:
-    "Motor, boya-kaporta, şase, süspansiyon, fren ve daha fazlası — OtoVizör Ekspertiz'in sunduğu tüm oto ekspertiz hizmetleri.",
+    "Motor, boya-kaporta, şase, süspansiyon, fren ve daha fazlası — Cesa Oto Ekspertiz'in sunduğu tüm oto ekspertiz hizmetleri.",
 };
 
 export default async function ServicesPage() {

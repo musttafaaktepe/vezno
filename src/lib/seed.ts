@@ -327,15 +327,15 @@ export function seedStatements(): InStatement[] {
     sql: `INSERT INTO siteSettings (id, brandName, tagline, phone, whatsapp, email, address, heroTitle, heroSubtitle, aboutText, workingHours) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       "main",
-      "OtoVizör Ekspertiz",
+      "Cesa Oto Ekspertiz",
       "Aracınızı almadan önce gerçeği görün.",
       "0850 255 08 08",
       "905002550808",
-      "info@otovizor.com.tr",
+      "info@cesaotoekspertiz.com",
       "Genel Merkez: Barbaros Mah. Ekspertiz Cad. No:12, Ataşehir/İstanbul",
       "Araç Almadan Önce, Gerçeği Görün",
       "Bağımsız ve tarafsız oto ekspertiz hizmeti. Şubelerimizde ya da bulunduğunuz yerde, 120'den fazla noktadan detaylı kontrol ile aracın gerçek durumunu öğrenin.",
-      "OtoVizör Ekspertiz, ikinci el araç alım-satımında güvenilir karar verebilmeniz için 2011'den bu yana bağımsız ekspertiz hizmeti sunuyor. Alanında uzman eksperlerimiz ve son teknoloji ölçüm cihazlarımızla, her aracı 120'den fazla kontrol noktasından geçiriyor, sonucu tarafsız ve anlaşılır bir raporla elinize ulaştırıyoruz. Amacımız; sizi yalnızca bir rapor değil, doğru bir karar ile baş başa bırakmak.",
+      "Cesa Oto Ekspertiz, ikinci el araç alım-satımında güvenilir karar verebilmeniz için 2011'den bu yana bağımsız ekspertiz hizmeti sunuyor. Alanında uzman eksperlerimiz ve son teknoloji ölçüm cihazlarımızla, her aracı 120'den fazla kontrol noktasından geçiriyor, sonucu tarafsız ve anlaşılır bir raporla elinize ulaştırıyoruz. Amacımız; sizi yalnızca bir rapor değil, doğru bir karar ile baş başa bırakmak.",
       "Hafta içi 08:30-19:00, Cumartesi 09:00-17:00, Pazar kapalı",
     ],
   });

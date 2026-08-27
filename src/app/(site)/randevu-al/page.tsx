@@ -6,7 +6,7 @@ import BookingForm from "./BookingForm";
 
 export const metadata: Metadata = {
   title: "Randevu Al",
-  description: "OtoVizör Ekspertiz'te online randevu oluşturun.",
+  description: "Cesa Oto Ekspertiz'te online randevu oluşturun.",
 };
 
 type SearchParams = { branch?: string; package?: string; type?: string };

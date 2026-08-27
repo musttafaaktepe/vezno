@@ -31,7 +31,7 @@ export default async function AdminDashboardPage() {
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-slate-900">Merhaba 👋</h1>
         <p className="mt-1 text-sm text-slate-500">
-          OtoVizör Ekspertiz yönetim paneline hoş geldiniz. Sitedeki içerikleri ve randevuları
+          Cesa Oto Ekspertiz yönetim paneline hoş geldiniz. Sitedeki içerikleri ve randevuları
           buradan yönetebilirsiniz.
         </p>
       </div>
