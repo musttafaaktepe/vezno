@@ -9,7 +9,7 @@ export async function markMessageReadAction(formData: FormData): Promise<void> {
   const id = formData.get("id")?.toString() ?? "";
   const isRead = formData.get("isRead") === "true";
   if (!id) return;
-  markMessageRead(id, isRead);
+  await markMessageRead(id, isRead);
   revalidatePath("/admin/messages");
   revalidatePath("/admin");
 }
@@ -18,7 +18,7 @@ export async function deleteMessageAction(formData: FormData): Promise<void> {
   await requireAdminSession();
   const id = formData.get("id")?.toString() ?? "";
   if (!id) return;
-  deleteContactMessage(id);
+  await deleteContactMessage(id);
   revalidatePath("/admin/messages");
   revalidatePath("/admin");
 }

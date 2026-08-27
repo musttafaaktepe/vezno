@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   description: "OtoVizör Ekspertiz'in güncel kampanya ve fırsatlarını kaçırmayın.",
 };
 
-export default function CampaignsPage() {
-  const campaigns = listCampaigns({ onlyActive: true });
+export default async function CampaignsPage() {
+  const campaigns = await listCampaigns({ onlyActive: true });
 
   return (
     <>

@@ -1,29 +1,27 @@
-import { db } from "@/lib/db";
+import { queryAll, queryOne, execute, type Row } from "@/lib/db";
 import { genId } from "@/lib/ids";
 import { toBool, toFlag } from "./util";
 import type { Faq } from "./types";
 
-interface FaqRow {
-  id: string;
-  question: string;
-  answer: string;
-  sortOrder: number;
-  active: number;
+function mapRow(row: Row): Faq {
+  return {
+    id: row.id as string,
+    question: row.question as string,
+    answer: row.answer as string,
+    sortOrder: Number(row.sortOrder),
+    active: toBool(row.active),
+  };
 }
 
-function mapRow(row: FaqRow): Faq {
-  return { ...row, active: toBool(row.active) };
-}
-
-export function listFaqs(opts: { onlyActive?: boolean } = {}): Faq[] {
+export async function listFaqs(opts: { onlyActive?: boolean } = {}): Promise<Faq[]> {
   const rows = opts.onlyActive
-    ? (db.prepare(`SELECT * FROM faqs WHERE active = 1 ORDER BY sortOrder ASC`).all() as unknown as FaqRow[])
-    : (db.prepare(`SELECT * FROM faqs ORDER BY sortOrder ASC`).all() as unknown as FaqRow[]);
+    ? await queryAll(`SELECT * FROM faqs WHERE active = 1 ORDER BY sortOrder ASC`)
+    : await queryAll(`SELECT * FROM faqs ORDER BY sortOrder ASC`);
   return rows.map(mapRow);
 }
 
-export function getFaqById(id: string): Faq | null {
-  const row = db.prepare(`SELECT * FROM faqs WHERE id = ?`).get(id) as unknown as FaqRow | undefined;
+export async function getFaqById(id: string): Promise<Faq | null> {
+  const row = await queryOne(`SELECT * FROM faqs WHERE id = ?`, [id]);
   return row ? mapRow(row) : null;
 }
 
@@ -34,21 +32,29 @@ export interface FaqInput {
   active?: boolean;
 }
 
-export function createFaq(input: FaqInput): Faq {
+export async function createFaq(input: FaqInput): Promise<Faq> {
   const id = genId();
-  db.prepare(
-    `INSERT INTO faqs (id, question, answer, sortOrder, active) VALUES (?, ?, ?, ?, ?)`,
-  ).run(id, input.question, input.answer, input.sortOrder ?? 0, toFlag(input.active ?? true));
-  return getFaqById(id)!;
+  await execute(`INSERT INTO faqs (id, question, answer, sortOrder, active) VALUES (?, ?, ?, ?, ?)`, [
+    id,
+    input.question,
+    input.answer,
+    input.sortOrder ?? 0,
+    toFlag(input.active ?? true),
+  ]);
+  return (await getFaqById(id))!;
 }
 
-export function updateFaq(id: string, input: FaqInput): Faq | null {
-  db.prepare(
-    `UPDATE faqs SET question = ?, answer = ?, sortOrder = ?, active = ? WHERE id = ?`,
-  ).run(input.question, input.answer, input.sortOrder ?? 0, toFlag(input.active ?? true), id);
+export async function updateFaq(id: string, input: FaqInput): Promise<Faq | null> {
+  await execute(`UPDATE faqs SET question = ?, answer = ?, sortOrder = ?, active = ? WHERE id = ?`, [
+    input.question,
+    input.answer,
+    input.sortOrder ?? 0,
+    toFlag(input.active ?? true),
+    id,
+  ]);
   return getFaqById(id);
 }
 
-export function deleteFaq(id: string): void {
-  db.prepare(`DELETE FROM faqs WHERE id = ?`).run(id);
+export async function deleteFaq(id: string): Promise<void> {
+  await execute(`DELETE FROM faqs WHERE id = ?`, [id]);
 }

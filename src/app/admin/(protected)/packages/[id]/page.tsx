@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Paketi Düzenle" };
 
 export default async function EditPackagePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const pkg = getPackageById(id);
+  const pkg = await getPackageById(id);
   if (!pkg) notFound();
 
   return (

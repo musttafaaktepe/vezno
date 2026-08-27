@@ -24,7 +24,7 @@ function revalidateCampaignPaths(): void {
 
 export async function createCampaignAction(formData: FormData): Promise<void> {
   await requireAdminSession();
-  createCampaign(readInput(formData));
+  await createCampaign(readInput(formData));
   revalidateCampaignPaths();
   redirect("/admin/campaigns");
 }
@@ -33,7 +33,7 @@ export async function updateCampaignAction(formData: FormData): Promise<void> {
   await requireAdminSession();
   const id = formData.get("id")?.toString() ?? "";
   if (!id) return;
-  updateCampaign(id, readInput(formData));
+  await updateCampaign(id, readInput(formData));
   revalidateCampaignPaths();
   redirect("/admin/campaigns");
 }
@@ -42,7 +42,7 @@ export async function deleteCampaignAction(formData: FormData): Promise<void> {
   await requireAdminSession();
   const id = formData.get("id")?.toString() ?? "";
   if (!id) return;
-  deleteCampaign(id);
+  await deleteCampaign(id);
   revalidateCampaignPaths();
   redirect("/admin/campaigns");
 }

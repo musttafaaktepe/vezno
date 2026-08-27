@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Hizmeti Düzenle" };
 
 export default async function EditServicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const service = getServiceById(id);
+  const service = await getServiceById(id);
   if (!service) notFound();
 
   return (

@@ -13,7 +13,7 @@ export async function updateAppointmentStatusAction(formData: FormData): Promise
   const id = formData.get("id")?.toString() ?? "";
   const status = formData.get("status")?.toString() as AppointmentStatus;
   if (!id || !VALID_STATUSES.includes(status)) return;
-  updateAppointmentStatus(id, status);
+  await updateAppointmentStatus(id, status);
   revalidatePath("/admin/appointments");
   revalidatePath(`/admin/appointments/${id}`);
   revalidatePath("/admin");
@@ -23,7 +23,7 @@ export async function deleteAppointmentAction(formData: FormData): Promise<void>
   await requireAdminSession();
   const id = formData.get("id")?.toString() ?? "";
   if (!id) return;
-  deleteAppointment(id);
+  await deleteAppointment(id);
   revalidatePath("/admin/appointments");
   revalidatePath("/admin");
   redirect("/admin/appointments");

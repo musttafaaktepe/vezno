@@ -8,7 +8,7 @@ import { deleteMessageAction, markMessageReadAction } from "./actions";
 export const metadata: Metadata = { title: "Mesajlar" };
 
 export default async function AdminMessagesPage() {
-  const messages = listContactMessages();
+  const messages = await listContactMessages();
 
   return (
     <div>

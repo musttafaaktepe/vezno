@@ -19,7 +19,7 @@ function readInput(formData: FormData): ServiceInput {
 
 export async function createServiceAction(formData: FormData): Promise<void> {
   await requireAdminSession();
-  createService(readInput(formData));
+  await createService(readInput(formData));
   revalidatePath("/admin/services");
   revalidatePublicSite();
   redirect("/admin/services");
@@ -29,7 +29,7 @@ export async function updateServiceAction(formData: FormData): Promise<void> {
   await requireAdminSession();
   const id = formData.get("id")?.toString() ?? "";
   if (!id) return;
-  updateService(id, readInput(formData));
+  await updateService(id, readInput(formData));
   revalidatePath("/admin/services");
   revalidatePublicSite();
   redirect("/admin/services");
@@ -39,7 +39,7 @@ export async function deleteServiceAction(formData: FormData): Promise<void> {
   await requireAdminSession();
   const id = formData.get("id")?.toString() ?? "";
   if (!id) return;
-  deleteService(id);
+  await deleteService(id);
   revalidatePath("/admin/services");
   revalidatePublicSite();
   redirect("/admin/services");

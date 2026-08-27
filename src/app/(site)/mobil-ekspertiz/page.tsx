@@ -10,8 +10,8 @@ export const metadata: Metadata = {
     "Şubeye gelmenize gerek yok. Mobil ekspertiz ekibimiz, taşınabilir ölçüm cihazlarıyla aracın bulunduğu yere gelir.",
 };
 
-export default function MobileExpertisePage() {
-  const mobilePackage = listPackages({ onlyActive: true }).find((p) =>
+export default async function MobileExpertisePage() {
+  const mobilePackage = (await listPackages({ onlyActive: true })).find((p) =>
     p.slug.includes("mobil"),
   );
 

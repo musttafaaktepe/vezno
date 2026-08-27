@@ -1,38 +1,32 @@
-import { db } from "@/lib/db";
+import { queryAll, queryOne, execute, type Row } from "@/lib/db";
 import { genId, slugify } from "@/lib/ids";
 import { toBool, toFlag } from "./util";
 import type { Campaign } from "./types";
 
-interface CampaignRow {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  badge: string | null;
-  validUntil: string | null;
-  active: number;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
+function mapRow(row: Row): Campaign {
+  return {
+    id: row.id as string,
+    slug: row.slug as string,
+    title: row.title as string,
+    description: row.description as string,
+    badge: (row.badge as string | null) ?? null,
+    validUntil: (row.validUntil as string | null) ?? null,
+    active: toBool(row.active),
+    sortOrder: Number(row.sortOrder),
+    createdAt: row.createdAt as string,
+    updatedAt: row.updatedAt as string,
+  };
 }
 
-function mapRow(row: CampaignRow): Campaign {
-  return { ...row, active: toBool(row.active) };
-}
-
-export function listCampaigns(opts: { onlyActive?: boolean } = {}): Campaign[] {
+export async function listCampaigns(opts: { onlyActive?: boolean } = {}): Promise<Campaign[]> {
   const rows = opts.onlyActive
-    ? (db
-        .prepare(`SELECT * FROM campaigns WHERE active = 1 ORDER BY sortOrder ASC`)
-        .all() as unknown as CampaignRow[])
-    : (db.prepare(`SELECT * FROM campaigns ORDER BY sortOrder ASC`).all() as unknown as CampaignRow[]);
+    ? await queryAll(`SELECT * FROM campaigns WHERE active = 1 ORDER BY sortOrder ASC`)
+    : await queryAll(`SELECT * FROM campaigns ORDER BY sortOrder ASC`);
   return rows.map(mapRow);
 }
 
-export function getCampaignById(id: string): Campaign | null {
-  const row = db.prepare(`SELECT * FROM campaigns WHERE id = ?`).get(id) as unknown as
-    | CampaignRow
-    | undefined;
+export async function getCampaignById(id: string): Promise<Campaign | null> {
+  const row = await queryOne(`SELECT * FROM campaigns WHERE id = ?`, [id]);
   return row ? mapRow(row) : null;
 }
 
@@ -45,39 +39,41 @@ export interface CampaignInput {
   active?: boolean;
 }
 
-export function createCampaign(input: CampaignInput): Campaign {
+export async function createCampaign(input: CampaignInput): Promise<Campaign> {
   const id = genId();
   const slug = slugify(input.title);
-  db.prepare(
+  await execute(
     `INSERT INTO campaigns (id, slug, title, description, badge, validUntil, sortOrder, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(
-    id,
-    slug,
-    input.title,
-    input.description,
-    input.badge ?? null,
-    input.validUntil ?? null,
-    input.sortOrder ?? 0,
-    toFlag(input.active ?? true),
+    [
+      id,
+      slug,
+      input.title,
+      input.description,
+      input.badge ?? null,
+      input.validUntil ?? null,
+      input.sortOrder ?? 0,
+      toFlag(input.active ?? true),
+    ],
   );
-  return getCampaignById(id)!;
+  return (await getCampaignById(id))!;
 }
 
-export function updateCampaign(id: string, input: CampaignInput): Campaign | null {
-  db.prepare(
+export async function updateCampaign(id: string, input: CampaignInput): Promise<Campaign | null> {
+  await execute(
     `UPDATE campaigns SET title = ?, description = ?, badge = ?, validUntil = ?, sortOrder = ?, active = ?, updatedAt = datetime('now') WHERE id = ?`,
-  ).run(
-    input.title,
-    input.description,
-    input.badge ?? null,
-    input.validUntil ?? null,
-    input.sortOrder ?? 0,
-    toFlag(input.active ?? true),
-    id,
+    [
+      input.title,
+      input.description,
+      input.badge ?? null,
+      input.validUntil ?? null,
+      input.sortOrder ?? 0,
+      toFlag(input.active ?? true),
+      id,
+    ],
   );
   return getCampaignById(id);
 }
 
-export function deleteCampaign(id: string): void {
-  db.prepare(`DELETE FROM campaigns WHERE id = ?`).run(id);
+export async function deleteCampaign(id: string): Promise<void> {
+  await execute(`DELETE FROM campaigns WHERE id = ?`, [id]);
 }

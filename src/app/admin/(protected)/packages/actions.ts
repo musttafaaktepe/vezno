@@ -26,7 +26,7 @@ function readInput(formData: FormData): PackageInput {
 
 export async function createPackageAction(formData: FormData): Promise<void> {
   await requireAdminSession();
-  createPackage(readInput(formData));
+  await createPackage(readInput(formData));
   revalidatePath("/admin/packages");
   revalidatePublicSite();
   redirect("/admin/packages");
@@ -36,7 +36,7 @@ export async function updatePackageAction(formData: FormData): Promise<void> {
   await requireAdminSession();
   const id = formData.get("id")?.toString() ?? "";
   if (!id) return;
-  updatePackage(id, readInput(formData));
+  await updatePackage(id, readInput(formData));
   revalidatePath("/admin/packages");
   revalidatePublicSite();
   redirect("/admin/packages");
@@ -46,7 +46,7 @@ export async function deletePackageAction(formData: FormData): Promise<void> {
   await requireAdminSession();
   const id = formData.get("id")?.toString() ?? "";
   if (!id) return;
-  deletePackage(id);
+  await deletePackage(id);
   revalidatePath("/admin/packages");
   revalidatePublicSite();
   redirect("/admin/packages");

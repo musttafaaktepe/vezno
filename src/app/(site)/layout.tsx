@@ -5,10 +5,12 @@ import Header from "./_components/Header";
 import Footer from "./_components/Footer";
 import WhatsAppButton from "./_components/WhatsAppButton";
 
-export default function SiteLayout({ children }: { children: React.ReactNode }) {
-  const settings = getSiteSettings();
-  const services = listServices({ onlyActive: true });
-  const branches = listBranches({ onlyActive: true });
+export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  const [settings, services, branches] = await Promise.all([
+    getSiteSettings(),
+    listServices({ onlyActive: true }),
+    listBranches({ onlyActive: true }),
+  ]);
 
   return (
     <>

@@ -31,7 +31,7 @@ export async function updateSiteSettingsAction(
     workingHours: formData.get("workingHours")?.toString().trim() || null,
   };
 
-  updateSiteSettings(input);
+  await updateSiteSettings(input);
   revalidatePublicSite();
   revalidatePath("/admin/settings");
 

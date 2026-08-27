@@ -17,7 +17,7 @@ export default async function BookingSuccessPage({
   searchParams: Promise<{ code?: string }>;
 }) {
   const { code } = await searchParams;
-  const appointment = code ? getAppointmentByTrackingCode(code) : null;
+  const appointment = code ? await getAppointmentByTrackingCode(code) : null;
 
   if (!appointment) {
     return (
@@ -32,8 +32,8 @@ export default async function BookingSuccessPage({
     );
   }
 
-  const branch = getBranchById(appointment.branchId);
-  const pkg = appointment.packageId ? getPackageById(appointment.packageId) : null;
+  const branch = await getBranchById(appointment.branchId);
+  const pkg = appointment.packageId ? await getPackageById(appointment.packageId) : null;
 
   return (
     <Section>

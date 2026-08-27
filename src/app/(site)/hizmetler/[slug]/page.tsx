@@ -14,17 +14,17 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const service = getServiceBySlug(slug);
+  const service = await getServiceBySlug(slug);
   if (!service) return {};
   return { title: service.title, description: service.summary };
 }
 
 export default async function ServiceDetailPage({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
-  const service = getServiceBySlug(slug);
+  const service = await getServiceBySlug(slug);
   if (!service || !service.active) notFound();
 
-  const otherServices = listServices({ onlyActive: true }).filter((s) => s.id !== service.id);
+  const otherServices = (await listServices({ onlyActive: true })).filter((s) => s.id !== service.id);
 
   return (
     <>

@@ -10,7 +10,7 @@ import { deleteServiceAction } from "./actions";
 export const metadata: Metadata = { title: "Hizmetler" };
 
 export default async function AdminServicesPage() {
-  const services = listServices();
+  const services = await listServices();
 
   return (
     <div>

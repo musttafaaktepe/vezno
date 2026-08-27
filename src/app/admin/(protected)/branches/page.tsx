@@ -10,7 +10,7 @@ import { deleteBranchAction } from "./actions";
 export const metadata: Metadata = { title: "Şubeler" };
 
 export default async function AdminBranchesPage() {
-  const branches = listBranches();
+  const branches = await listBranches();
 
   return (
     <div>

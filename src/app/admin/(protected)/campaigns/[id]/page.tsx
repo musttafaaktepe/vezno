@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Kampanyayı Düzenle" };
 
 export default async function EditCampaignPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const campaign = getCampaignById(id);
+  const campaign = await getCampaignById(id);
   if (!campaign) notFound();
 
   return (

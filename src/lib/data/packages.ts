@@ -1,58 +1,45 @@
-import { db } from "@/lib/db";
+import { queryAll, queryOne, execute, type Row } from "@/lib/db";
 import { genId, slugify } from "@/lib/ids";
 import { toBool, toFlag } from "./util";
 import type { Package } from "./types";
 
-interface PackageRow {
-  id: string;
-  slug: string;
-  name: string;
-  price: number;
-  duration: string | null;
-  description: string;
-  features: string;
-  highlighted: number;
-  sortOrder: number;
-  active: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-function mapRow(row: PackageRow): Package {
+function mapRow(row: Row): Package {
   let features: string[] = [];
   try {
-    features = JSON.parse(row.features);
+    features = JSON.parse(row.features as string);
   } catch {
     features = [];
   }
   return {
-    ...row,
+    id: row.id as string,
+    slug: row.slug as string,
+    name: row.name as string,
+    price: Number(row.price),
+    duration: (row.duration as string | null) ?? null,
+    description: row.description as string,
     features,
     highlighted: toBool(row.highlighted),
+    sortOrder: Number(row.sortOrder),
     active: toBool(row.active),
+    createdAt: row.createdAt as string,
+    updatedAt: row.updatedAt as string,
   };
 }
 
-export function listPackages(opts: { onlyActive?: boolean } = {}): Package[] {
+export async function listPackages(opts: { onlyActive?: boolean } = {}): Promise<Package[]> {
   const rows = opts.onlyActive
-    ? (db
-        .prepare(`SELECT * FROM packages WHERE active = 1 ORDER BY sortOrder ASC`)
-        .all() as unknown as PackageRow[])
-    : (db.prepare(`SELECT * FROM packages ORDER BY sortOrder ASC`).all() as unknown as PackageRow[]);
+    ? await queryAll(`SELECT * FROM packages WHERE active = 1 ORDER BY sortOrder ASC`)
+    : await queryAll(`SELECT * FROM packages ORDER BY sortOrder ASC`);
   return rows.map(mapRow);
 }
 
-export function getPackageById(id: string): Package | null {
-  const row = db.prepare(`SELECT * FROM packages WHERE id = ?`).get(id) as unknown as
-    | PackageRow
-    | undefined;
+export async function getPackageById(id: string): Promise<Package | null> {
+  const row = await queryOne(`SELECT * FROM packages WHERE id = ?`, [id]);
   return row ? mapRow(row) : null;
 }
 
-export function getPackageBySlug(slug: string): Package | null {
-  const row = db.prepare(`SELECT * FROM packages WHERE slug = ?`).get(slug) as unknown as
-    | PackageRow
-    | undefined;
+export async function getPackageBySlug(slug: string): Promise<Package | null> {
+  const row = await queryOne(`SELECT * FROM packages WHERE slug = ?`, [slug]);
   return row ? mapRow(row) : null;
 }
 
@@ -67,43 +54,45 @@ export interface PackageInput {
   active?: boolean;
 }
 
-export function createPackage(input: PackageInput): Package {
+export async function createPackage(input: PackageInput): Promise<Package> {
   const id = genId();
   const slug = slugify(input.name);
-  db.prepare(
+  await execute(
     `INSERT INTO packages (id, slug, name, price, duration, description, features, highlighted, sortOrder, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(
-    id,
-    slug,
-    input.name,
-    input.price,
-    input.duration ?? null,
-    input.description,
-    JSON.stringify(input.features),
-    toFlag(input.highlighted ?? false),
-    input.sortOrder ?? 0,
-    toFlag(input.active ?? true),
+    [
+      id,
+      slug,
+      input.name,
+      input.price,
+      input.duration ?? null,
+      input.description,
+      JSON.stringify(input.features),
+      toFlag(input.highlighted ?? false),
+      input.sortOrder ?? 0,
+      toFlag(input.active ?? true),
+    ],
   );
-  return getPackageById(id)!;
+  return (await getPackageById(id))!;
 }
 
-export function updatePackage(id: string, input: PackageInput): Package | null {
-  db.prepare(
+export async function updatePackage(id: string, input: PackageInput): Promise<Package | null> {
+  await execute(
     `UPDATE packages SET name = ?, price = ?, duration = ?, description = ?, features = ?, highlighted = ?, sortOrder = ?, active = ?, updatedAt = datetime('now') WHERE id = ?`,
-  ).run(
-    input.name,
-    input.price,
-    input.duration ?? null,
-    input.description,
-    JSON.stringify(input.features),
-    toFlag(input.highlighted ?? false),
-    input.sortOrder ?? 0,
-    toFlag(input.active ?? true),
-    id,
+    [
+      input.name,
+      input.price,
+      input.duration ?? null,
+      input.description,
+      JSON.stringify(input.features),
+      toFlag(input.highlighted ?? false),
+      input.sortOrder ?? 0,
+      toFlag(input.active ?? true),
+      id,
+    ],
   );
   return getPackageById(id);
 }
 
-export function deletePackage(id: string): void {
-  db.prepare(`DELETE FROM packages WHERE id = ?`).run(id);
+export async function deletePackage(id: string): Promise<void> {
+  await execute(`DELETE FROM packages WHERE id = ?`, [id]);
 }

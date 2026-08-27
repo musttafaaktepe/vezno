@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Yorumu Düzenle" };
 
 export default async function EditTestimonialPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const testimonial = getTestimonialById(id);
+  const testimonial = await getTestimonialById(id);
   if (!testimonial) notFound();
 
   return (

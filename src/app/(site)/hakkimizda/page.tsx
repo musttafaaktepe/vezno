@@ -32,9 +32,8 @@ const VALUES = [
   },
 ];
 
-export default function AboutPage() {
-  const settings = getSiteSettings();
-  const branches = listBranches({ onlyActive: true });
+export default async function AboutPage() {
+  const [settings, branches] = await Promise.all([getSiteSettings(), listBranches({ onlyActive: true })]);
 
   return (
     <>

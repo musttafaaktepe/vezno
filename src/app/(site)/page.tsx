@@ -10,14 +10,17 @@ import { listFaqs } from "@/lib/data/faqs";
 import { Section, SectionHeading, Eyebrow, Container } from "./_components/Section";
 import ServiceIcon from "./_components/ServiceIcon";
 
-export default function HomePage() {
-  const settings = getSiteSettings();
-  const services = listServices({ onlyActive: true });
-  const packages = listPackages({ onlyActive: true });
-  const campaigns = listCampaigns({ onlyActive: true });
-  const testimonials = listTestimonials({ onlyActive: true });
-  const branches = listBranches({ onlyActive: true });
-  const faqs = listFaqs({ onlyActive: true }).slice(0, 5);
+export default async function HomePage() {
+  const [settings, services, packages, campaigns, testimonials, branches, allFaqs] = await Promise.all([
+    getSiteSettings(),
+    listServices({ onlyActive: true }),
+    listPackages({ onlyActive: true }),
+    listCampaigns({ onlyActive: true }),
+    listTestimonials({ onlyActive: true }),
+    listBranches({ onlyActive: true }),
+    listFaqs({ onlyActive: true }),
+  ]);
+  const faqs = allFaqs.slice(0, 5);
 
   return (
     <>
