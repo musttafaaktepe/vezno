@@ -1,18 +1,17 @@
-import type { DatabaseSync } from "node:sqlite";
+import type { InStatement } from "@libsql/client";
 import { genId } from "./ids";
 import { hashPassword } from "./auth";
 
-export function seedDatabase(database: DatabaseSync): void {
-  const insertAdmin = database.prepare(
-    `INSERT INTO adminUsers (id, email, passwordHash, name) VALUES (?, ?, ?, ?)`,
-  );
+export function seedStatements(): InStatement[] {
+  const statements: InStatement[] = [];
+
   const adminEmail = process.env.ADMIN_SEED_EMAIL ?? "musttafaaktepe@gmail.com";
   const adminPassword = process.env.ADMIN_SEED_PASSWORD ?? "Vezno2026!";
-  insertAdmin.run(genId(), adminEmail, hashPassword(adminPassword), "Yönetici");
+  statements.push({
+    sql: `INSERT INTO adminUsers (id, email, passwordHash, name) VALUES (?, ?, ?, ?)`,
+    args: [genId(), adminEmail, hashPassword(adminPassword), "Yönetici"],
+  });
 
-  const insertService = database.prepare(
-    `INSERT INTO services (id, slug, title, summary, description, icon, sortOrder) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  );
   const services: [string, string, string, string, string][] = [
     [
       "motor-performans-analizi",
@@ -71,20 +70,14 @@ export function seedDatabase(database: DatabaseSync): void {
       "report",
     ],
   ];
-  services.forEach((s, i) => insertService.run(genId(), s[0], s[1], s[2], s[3], s[4], i));
-
-  const insertPackage = database.prepare(
-    `INSERT INTO packages (id, slug, name, price, duration, description, features, highlighted, sortOrder) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  services.forEach((s, i) =>
+    statements.push({
+      sql: `INSERT INTO services (id, slug, title, summary, description, icon, sortOrder) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      args: [genId(), s[0], s[1], s[2], s[3], s[4], i],
+    }),
   );
-  const packages: [
-    string,
-    string,
-    number,
-    string,
-    string,
-    string[],
-    boolean,
-  ][] = [
+
+  const packages: [string, string, number, string, string, string[], boolean][] = [
     [
       "mini-kontrol",
       "Mini Kontrol",
@@ -156,31 +149,13 @@ export function seedDatabase(database: DatabaseSync): void {
     ],
   ];
   packages.forEach((p, i) =>
-    insertPackage.run(
-      genId(),
-      p[0],
-      p[1],
-      p[2],
-      p[3],
-      p[4],
-      JSON.stringify(p[5]),
-      p[6] ? 1 : 0,
-      i,
-    ),
+    statements.push({
+      sql: `INSERT INTO packages (id, slug, name, price, duration, description, features, highlighted, sortOrder) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [genId(), p[0], p[1], p[2], p[3], p[4], JSON.stringify(p[5]), p[6] ? 1 : 0, i],
+    }),
   );
 
-  const insertBranch = database.prepare(
-    `INSERT INTO branches (id, slug, name, city, district, address, phone, workingHours, mapUrl, sortOrder) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  );
-  const branches: [
-    string,
-    string,
-    string,
-    string,
-    string,
-    string,
-    string,
-  ][] = [
+  const branches: [string, string, string, string, string, string, string][] = [
     [
       "istanbul-kadikoy",
       "İstanbul Kadıköy Şubesi",
@@ -237,15 +212,13 @@ export function seedDatabase(database: DatabaseSync): void {
     ],
   ];
   branches.forEach((b, i) => {
-    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-      b[4],
-    )}`;
-    insertBranch.run(genId(), b[0], b[1], b[2], b[3], b[4], b[5], b[6], mapUrl, i);
+    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(b[4])}`;
+    statements.push({
+      sql: `INSERT INTO branches (id, slug, name, city, district, address, phone, workingHours, mapUrl, sortOrder) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [genId(), b[0], b[1], b[2], b[3], b[4], b[5], b[6], mapUrl, i],
+    });
   });
 
-  const insertCampaign = database.prepare(
-    `INSERT INTO campaigns (id, slug, title, description, badge, sortOrder) VALUES (?, ?, ?, ?, ?, ?)`,
-  );
   const campaigns: [string, string, string, string][] = [
     [
       "ilk-randevu-indirimi",
@@ -266,11 +239,13 @@ export function seedDatabase(database: DatabaseSync): void {
       "Referans",
     ],
   ];
-  campaigns.forEach((c, i) => insertCampaign.run(genId(), c[0], c[1], c[2], c[3], i));
-
-  const insertTestimonial = database.prepare(
-    `INSERT INTO testimonials (id, name, city, vehicle, rating, comment, sortOrder) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  campaigns.forEach((c, i) =>
+    statements.push({
+      sql: `INSERT INTO campaigns (id, slug, title, description, badge, sortOrder) VALUES (?, ?, ?, ?, ?, ?)`,
+      args: [genId(), c[0], c[1], c[2], c[3], i],
+    }),
   );
+
   const testimonials: [string, string, string, number, string][] = [
     [
       "Emre K.",
@@ -309,12 +284,12 @@ export function seedDatabase(database: DatabaseSync): void {
     ],
   ];
   testimonials.forEach((t, i) =>
-    insertTestimonial.run(genId(), t[0], t[1], t[2], t[3], t[4], i),
+    statements.push({
+      sql: `INSERT INTO testimonials (id, name, city, vehicle, rating, comment, sortOrder) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      args: [genId(), t[0], t[1], t[2], t[3], t[4], i],
+    }),
   );
 
-  const insertFaq = database.prepare(
-    `INSERT INTO faqs (id, question, answer, sortOrder) VALUES (?, ?, ?, ?)`,
-  );
   const faqs: [string, string][] = [
     [
       "Ekspertiz işlemi ne kadar sürer?",
@@ -341,22 +316,29 @@ export function seedDatabase(database: DatabaseSync): void {
       "Randevu sorgulama sayfasından takip kodunuz ve telefon numaranızla randevunuzu görüntüleyebilir, şubemizi arayarak değişiklik talep edebilirsiniz.",
     ],
   ];
-  faqs.forEach((f, i) => insertFaq.run(genId(), f[0], f[1], i));
+  faqs.forEach((f, i) =>
+    statements.push({
+      sql: `INSERT INTO faqs (id, question, answer, sortOrder) VALUES (?, ?, ?, ?)`,
+      args: [genId(), f[0], f[1], i],
+    }),
+  );
 
-  const insertSettings = database.prepare(
-    `INSERT INTO siteSettings (id, brandName, tagline, phone, whatsapp, email, address, heroTitle, heroSubtitle, aboutText, workingHours) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  );
-  insertSettings.run(
-    "main",
-    "OtoVizör Ekspertiz",
-    "Aracınızı almadan önce gerçeği görün.",
-    "0850 255 08 08",
-    "905002550808",
-    "info@otovizor.com.tr",
-    "Genel Merkez: Barbaros Mah. Ekspertiz Cad. No:12, Ataşehir/İstanbul",
-    "Araç Almadan Önce, Gerçeği Görün",
-    "Bağımsız ve tarafsız oto ekspertiz hizmeti. Şubelerimizde ya da bulunduğunuz yerde, 120'den fazla noktadan detaylı kontrol ile aracın gerçek durumunu öğrenin.",
-    "OtoVizör Ekspertiz, ikinci el araç alım-satımında güvenilir karar verebilmeniz için 2011'den bu yana bağımsız ekspertiz hizmeti sunuyor. Alanında uzman eksperlerimiz ve son teknoloji ölçüm cihazlarımızla, her aracı 120'den fazla kontrol noktasından geçiriyor, sonucu tarafsız ve anlaşılır bir raporla elinize ulaştırıyoruz. Amacımız; sizi yalnızca bir rapor değil, doğru bir karar ile baş başa bırakmak.",
-    "Hafta içi 08:30-19:00, Cumartesi 09:00-17:00, Pazar kapalı",
-  );
+  statements.push({
+    sql: `INSERT INTO siteSettings (id, brandName, tagline, phone, whatsapp, email, address, heroTitle, heroSubtitle, aboutText, workingHours) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [
+      "main",
+      "OtoVizör Ekspertiz",
+      "Aracınızı almadan önce gerçeği görün.",
+      "0850 255 08 08",
+      "905002550808",
+      "info@otovizor.com.tr",
+      "Genel Merkez: Barbaros Mah. Ekspertiz Cad. No:12, Ataşehir/İstanbul",
+      "Araç Almadan Önce, Gerçeği Görün",
+      "Bağımsız ve tarafsız oto ekspertiz hizmeti. Şubelerimizde ya da bulunduğunuz yerde, 120'den fazla noktadan detaylı kontrol ile aracın gerçek durumunu öğrenin.",
+      "OtoVizör Ekspertiz, ikinci el araç alım-satımında güvenilir karar verebilmeniz için 2011'den bu yana bağımsız ekspertiz hizmeti sunuyor. Alanında uzman eksperlerimiz ve son teknoloji ölçüm cihazlarımızla, her aracı 120'den fazla kontrol noktasından geçiriyor, sonucu tarafsız ve anlaşılır bir raporla elinize ulaştırıyoruz. Amacımız; sizi yalnızca bir rapor değil, doğru bir karar ile baş başa bırakmak.",
+      "Hafta içi 08:30-19:00, Cumartesi 09:00-17:00, Pazar kapalı",
+    ],
+  });
+
+  return statements;
 }

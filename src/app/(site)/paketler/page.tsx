@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   description: "OtoVizör Ekspertiz paket seçenekleri ve güncel fiyatları.",
 };
 
-export default function PackagesPage() {
-  const packages = listPackages({ onlyActive: true });
+export default async function PackagesPage() {
+  const packages = await listPackages({ onlyActive: true });
 
   return (
     <>

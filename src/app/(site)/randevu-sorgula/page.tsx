@@ -28,9 +28,9 @@ export default async function TrackAppointmentPage({
 }) {
   const { code, phone } = await searchParams;
   const hasQuery = Boolean(code && phone);
-  const appointment = hasQuery ? findAppointmentByTrackingCodeAndPhone(code!, phone!) : null;
-  const branch = appointment ? getBranchById(appointment.branchId) : null;
-  const pkg = appointment?.packageId ? getPackageById(appointment.packageId) : null;
+  const appointment = hasQuery ? await findAppointmentByTrackingCodeAndPhone(code!, phone!) : null;
+  const branch = appointment ? await getBranchById(appointment.branchId) : null;
+  const pkg = appointment?.packageId ? await getPackageById(appointment.packageId) : null;
   const currentStepIndex = appointment
     ? STEPS.findIndex((s) => s.key === appointment.status)
     : -1;

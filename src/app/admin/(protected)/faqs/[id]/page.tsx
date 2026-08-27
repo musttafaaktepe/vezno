@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Soruyu Düzenle" };
 
 export default async function EditFaqPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const faq = getFaqById(id);
+  const faq = await getFaqById(id);
   if (!faq) notFound();
 
   return (

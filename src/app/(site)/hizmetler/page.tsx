@@ -11,8 +11,8 @@ export const metadata: Metadata = {
     "Motor, boya-kaporta, şase, süspansiyon, fren ve daha fazlası — OtoVizör Ekspertiz'in sunduğu tüm oto ekspertiz hizmetleri.",
 };
 
-export default function ServicesPage() {
-  const services = listServices({ onlyActive: true });
+export default async function ServicesPage() {
+  const services = await listServices({ onlyActive: true });
 
   return (
     <>

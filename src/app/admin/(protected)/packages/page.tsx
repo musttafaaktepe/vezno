@@ -10,7 +10,7 @@ import { deletePackageAction } from "./actions";
 export const metadata: Metadata = { title: "Paketler" };
 
 export default async function AdminPackagesPage() {
-  const packages = listPackages();
+  const packages = await listPackages();
 
   return (
     <div>

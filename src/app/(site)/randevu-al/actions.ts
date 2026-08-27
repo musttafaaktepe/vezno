@@ -12,7 +12,7 @@ export interface BookingState {
 
 export async function getAvailableSlotsAction(branchId: string, date: string): Promise<string[]> {
   if (!branchId || !date) return TIME_SLOTS;
-  const booked = new Set(listBookedSlots(branchId, date));
+  const booked = new Set(await listBookedSlots(branchId, date));
   return TIME_SLOTS.filter((slot) => !booked.has(slot));
 }
 
@@ -45,7 +45,7 @@ export async function createAppointmentAction(
   const fieldErrors: Record<string, string> = {};
   if (!fullName) fieldErrors.fullName = "Ad soyad zorunludur.";
   if (!phone || phone.replace(/\D/g, "").length < 10) fieldErrors.phone = "Geçerli bir telefon numarası girin.";
-  if (!branchId || !getBranchById(branchId)) fieldErrors.branchId = "Lütfen bir şube seçin.";
+  if (!branchId || !(await getBranchById(branchId))) fieldErrors.branchId = "Lütfen bir şube seçin.";
   if (!appointmentDate || !isValidDate(appointmentDate)) fieldErrors.appointmentDate = "Geçerli bir tarih seçin.";
   if (!timeSlot || !TIME_SLOTS.includes(timeSlot)) fieldErrors.timeSlot = "Lütfen bir saat seçin.";
 
@@ -53,7 +53,7 @@ export async function createAppointmentAction(
     return { error: "Lütfen işaretli alanları kontrol edin.", fieldErrors };
   }
 
-  const booked = new Set(listBookedSlots(branchId, appointmentDate));
+  const booked = new Set(await listBookedSlots(branchId, appointmentDate));
   if (booked.has(timeSlot)) {
     return {
       error: "Seçtiğiniz saat az önce doldu, lütfen başka bir saat seçin.",
@@ -61,7 +61,7 @@ export async function createAppointmentAction(
     };
   }
 
-  const appointment = createAppointment({
+  const appointment = await createAppointment({
     fullName,
     phone,
     email: email || null,

@@ -10,9 +10,8 @@ export const metadata: Metadata = {
   description: "OtoVizör Ekspertiz ile iletişime geçin, sorularınızı bize iletin.",
 };
 
-export default function ContactPage() {
-  const settings = getSiteSettings();
-  const branches = listBranches({ onlyActive: true });
+export default async function ContactPage() {
+  const [settings, branches] = await Promise.all([getSiteSettings(), listBranches({ onlyActive: true })]);
 
   return (
     <>

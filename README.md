@@ -25,8 +25,9 @@ halka açık site hem de yönetim/backend tarafını barındırır.
 
 - **Next.js 16** (App Router, Server Actions/Functions, Turbopack)
 - **React 19**, **TypeScript**, **Tailwind CSS v4**
-- **Veritabanı:** Node.js'in yerleşik `node:sqlite` modülü — harici bir veritabanı sunucusu ya
-  da native derleme gerektirmez, dosya tabanlı (`data/app.db`)
+- **Veritabanı:** [Turso](https://turso.tech) (hosted libSQL), `@libsql/client` ile — Vercel gibi
+  sunucusuz ortamlarda kalıcı depolama sağlar. `TURSO_DATABASE_URL` tanımlı değilse yerel
+  geliştirmede otomatik olarak `data/app.db` dosyası kullanılır, Turso hesabı gerekmez
 - **Kimlik doğrulama:** `bcryptjs` ile parola hash'leme, `jose` ile imzalı JWT oturum çerezi
 - **İkonlar:** `lucide-react`
 
@@ -100,16 +101,17 @@ src/
         messages/       İletişim formu mesajları
         settings/       Site ayarları
   lib/
-    db.ts               SQLite bağlantısı + şema (tablolar `CREATE TABLE IF NOT EXISTS` ile)
-    seed.ts              İlk kurulumda eklenen örnek veriler
+    db.ts               Turso/libSQL bağlantısı + şema (tablolar `CREATE TABLE IF NOT EXISTS` ile)
+    seed.ts              İlk kurulumda eklenen örnek veriler (tek transaction'da toplu ekleme)
     auth.ts / session.ts Parola hash'leme ve oturum (JWT çerez) yönetimi
-    data/                Her tablo için CRUD fonksiyonları (services, packages, branches, ...)
+    data/                Her tablo için async CRUD fonksiyonları (services, packages, branches, ...)
 ```
 
 ## Notlar
 
-- Veritabanı dosyası (`data/app.db`) `.gitignore` içinde tutulur; her ortamda kendi verisiyle
-  başlar.
+- Veritabanı Turso'da (hosted libSQL) tutulur; `TURSO_DATABASE_URL` tanımlı değilse yerel
+  geliştirmede `data/app.db` dosyası kullanılır (`.gitignore` içinde, her klonlamada sıfırdan
+  seed edilir).
 - Statik olarak önbelleğe alınan sayfalar (anasayfa, hizmetler, paketler, şubeler vb.), admin
   panelinden yapılan her değişiklikte `revalidatePath` ile anında güncellenir — yeniden derleme
   gerekmez.

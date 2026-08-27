@@ -24,7 +24,7 @@ export async function submitContactMessage(
     return { error: "Lütfen geçerli bir e-posta adresi girin." };
   }
 
-  createContactMessage({ name, email, phone: phone || null, subject: subject || null, message });
+  await createContactMessage({ name, email, phone: phone || null, subject: subject || null, message });
 
   return { success: true };
 }

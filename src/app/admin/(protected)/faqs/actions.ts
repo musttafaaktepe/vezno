@@ -22,7 +22,7 @@ function revalidateFaqPaths(): void {
 
 export async function createFaqAction(formData: FormData): Promise<void> {
   await requireAdminSession();
-  createFaq(readInput(formData));
+  await createFaq(readInput(formData));
   revalidateFaqPaths();
   redirect("/admin/faqs");
 }
@@ -31,7 +31,7 @@ export async function updateFaqAction(formData: FormData): Promise<void> {
   await requireAdminSession();
   const id = formData.get("id")?.toString() ?? "";
   if (!id) return;
-  updateFaq(id, readInput(formData));
+  await updateFaq(id, readInput(formData));
   revalidateFaqPaths();
   redirect("/admin/faqs");
 }
@@ -40,7 +40,7 @@ export async function deleteFaqAction(formData: FormData): Promise<void> {
   await requireAdminSession();
   const id = formData.get("id")?.toString() ?? "";
   if (!id) return;
-  deleteFaq(id);
+  await deleteFaq(id);
   revalidateFaqPaths();
   redirect("/admin/faqs");
 }

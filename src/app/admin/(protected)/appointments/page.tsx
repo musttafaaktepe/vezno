@@ -24,16 +24,17 @@ export default async function AdminAppointmentsPage({
   searchParams: Promise<{ status?: string; q?: string; branch?: string }>;
 }) {
   const { status, q, branch } = await searchParams;
-  const branches = listBranches();
+  const [branches, packages, appointments] = await Promise.all([
+    listBranches(),
+    listPackages(),
+    listAppointments({
+      status: (status as AppointmentStatus) || undefined,
+      branchId: branch || undefined,
+      q: q || undefined,
+    }),
+  ]);
   const branchMap = new Map(branches.map((b) => [b.id, b.name]));
-  const packages = listPackages();
   const packageMap = new Map(packages.map((p) => [p.id, p.name]));
-
-  const appointments = listAppointments({
-    status: (status as AppointmentStatus) || undefined,
-    branchId: branch || undefined,
-    q: q || undefined,
-  });
 
   return (
     <div>

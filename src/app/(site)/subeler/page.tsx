@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   description: "OtoVizör Ekspertiz şubelerini ve iletişim bilgilerini inceleyin.",
 };
 
-export default function BranchesPage() {
-  const branches = listBranches({ onlyActive: true });
+export default async function BranchesPage() {
+  const branches = await listBranches({ onlyActive: true });
 
   return (
     <>

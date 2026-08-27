@@ -9,10 +9,14 @@ import { cardClass } from "./_components/ui";
 export const metadata: Metadata = { title: "Panel" };
 
 export default async function AdminDashboardPage() {
-  const stats = appointmentStats();
-  const unread = countUnreadMessages();
-  const recent = listAppointments().slice(0, 6);
-  const branches = new Map(listBranches().map((b) => [b.id, b.name]));
+  const [stats, unread, allAppointments, allBranches] = await Promise.all([
+    appointmentStats(),
+    countUnreadMessages(),
+    listAppointments(),
+    listBranches(),
+  ]);
+  const recent = allAppointments.slice(0, 6);
+  const branches = new Map(allBranches.map((b) => [b.id, b.name]));
 
   const cards = [
     { label: "Bugünkü Randevular", value: stats.today },

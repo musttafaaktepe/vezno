@@ -1,220 +1,218 @@
-import { DatabaseSync } from "node:sqlite";
+import { createClient, type Client, type InArgs, type InStatement } from "@libsql/client";
 import fs from "node:fs";
 import path from "node:path";
-import { seedDatabase } from "./seed";
+import { seedStatements } from "./seed";
 
-// On Vercel (and most serverless hosts) the deployed project directory is
-// read-only at runtime; only /tmp is writable, and it isn't shared or
-// persistent across instances or deploys. This keeps the app from crashing
-// there, but it's a stopgap: data can reset or differ between requests.
-// TODO: replace with a real hosted database (e.g. Turso or Postgres) before
-// relying on this for anything beyond a quick preview.
-const DATA_DIR = process.env.VERCEL
-  ? path.join("/tmp", "data")
-  : path.join(process.cwd(), "data");
-const DB_PATH = path.join(DATA_DIR, "app.db");
-const LOCK_PATH = path.join(DATA_DIR, ".init.lock");
+const SCHEMA_STATEMENTS: string[] = [
+  `CREATE TABLE IF NOT EXISTS adminUsers (
+    id TEXT PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    passwordHash TEXT NOT NULL,
+    name TEXT NOT NULL,
+    createdAt TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+  `CREATE TABLE IF NOT EXISTS services (
+    id TEXT PRIMARY KEY,
+    slug TEXT UNIQUE NOT NULL,
+    title TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    description TEXT NOT NULL,
+    icon TEXT,
+    sortOrder INTEGER NOT NULL DEFAULT 0,
+    active INTEGER NOT NULL DEFAULT 1,
+    createdAt TEXT NOT NULL DEFAULT (datetime('now')),
+    updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+  `CREATE TABLE IF NOT EXISTS packages (
+    id TEXT PRIMARY KEY,
+    slug TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    price INTEGER NOT NULL,
+    duration TEXT,
+    description TEXT NOT NULL,
+    features TEXT NOT NULL DEFAULT '[]',
+    highlighted INTEGER NOT NULL DEFAULT 0,
+    sortOrder INTEGER NOT NULL DEFAULT 0,
+    active INTEGER NOT NULL DEFAULT 1,
+    createdAt TEXT NOT NULL DEFAULT (datetime('now')),
+    updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+  `CREATE TABLE IF NOT EXISTS branches (
+    id TEXT PRIMARY KEY,
+    slug TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    city TEXT NOT NULL,
+    district TEXT,
+    address TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    workingHours TEXT NOT NULL,
+    mapUrl TEXT,
+    sortOrder INTEGER NOT NULL DEFAULT 0,
+    active INTEGER NOT NULL DEFAULT 1,
+    createdAt TEXT NOT NULL DEFAULT (datetime('now')),
+    updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+  `CREATE TABLE IF NOT EXISTS appointments (
+    id TEXT PRIMARY KEY,
+    trackingCode TEXT UNIQUE NOT NULL,
+    fullName TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    email TEXT,
+    plate TEXT,
+    vehicleBrand TEXT,
+    vehicleModel TEXT,
+    vehicleYear TEXT,
+    branchId TEXT NOT NULL REFERENCES branches(id),
+    packageId TEXT REFERENCES packages(id),
+    serviceType TEXT NOT NULL DEFAULT 'BRANCH',
+    appointmentDate TEXT NOT NULL,
+    timeSlot TEXT NOT NULL,
+    note TEXT,
+    status TEXT NOT NULL DEFAULT 'PENDING',
+    createdAt TEXT NOT NULL DEFAULT (datetime('now')),
+    updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_appointments_branch ON appointments(branchId)`,
+  `CREATE INDEX IF NOT EXISTS idx_appointments_status ON appointments(status)`,
+  `CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(appointmentDate)`,
+  `CREATE TABLE IF NOT EXISTS campaigns (
+    id TEXT PRIMARY KEY,
+    slug TEXT UNIQUE NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    badge TEXT,
+    validUntil TEXT,
+    active INTEGER NOT NULL DEFAULT 1,
+    sortOrder INTEGER NOT NULL DEFAULT 0,
+    createdAt TEXT NOT NULL DEFAULT (datetime('now')),
+    updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+  `CREATE TABLE IF NOT EXISTS testimonials (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    city TEXT,
+    vehicle TEXT,
+    rating INTEGER NOT NULL DEFAULT 5,
+    comment TEXT NOT NULL,
+    active INTEGER NOT NULL DEFAULT 1,
+    sortOrder INTEGER NOT NULL DEFAULT 0,
+    createdAt TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+  `CREATE TABLE IF NOT EXISTS faqs (
+    id TEXT PRIMARY KEY,
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    sortOrder INTEGER NOT NULL DEFAULT 0,
+    active INTEGER NOT NULL DEFAULT 1
+  )`,
+  `CREATE TABLE IF NOT EXISTS contactMessages (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT,
+    subject TEXT,
+    message TEXT NOT NULL,
+    isRead INTEGER NOT NULL DEFAULT 0,
+    createdAt TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+  `CREATE TABLE IF NOT EXISTS siteSettings (
+    id TEXT PRIMARY KEY,
+    brandName TEXT NOT NULL,
+    tagline TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    whatsapp TEXT,
+    email TEXT NOT NULL,
+    address TEXT,
+    heroTitle TEXT NOT NULL,
+    heroSubtitle TEXT NOT NULL,
+    aboutText TEXT NOT NULL,
+    instagramUrl TEXT,
+    facebookUrl TEXT,
+    youtubeUrl TEXT,
+    workingHours TEXT,
+    updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+];
 
-const SCHEMA_SQL = `
-CREATE TABLE IF NOT EXISTS adminUsers (
-  id TEXT PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  passwordHash TEXT NOT NULL,
-  name TEXT NOT NULL,
-  createdAt TEXT NOT NULL DEFAULT (datetime('now'))
-);
+function createDbClient(): Client {
+  // Falls back to a local libSQL file when no Turso credentials are set, so
+  // local development doesn't require a Turso account. Production (Vercel)
+  // always sets TURSO_DATABASE_URL, which points at the real hosted database.
+  const url = process.env.TURSO_DATABASE_URL ?? "file:./data/app.db";
+  const authToken = process.env.TURSO_AUTH_TOKEN;
 
-CREATE TABLE IF NOT EXISTS services (
-  id TEXT PRIMARY KEY,
-  slug TEXT UNIQUE NOT NULL,
-  title TEXT NOT NULL,
-  summary TEXT NOT NULL,
-  description TEXT NOT NULL,
-  icon TEXT,
-  sortOrder INTEGER NOT NULL DEFAULT 0,
-  active INTEGER NOT NULL DEFAULT 1,
-  createdAt TEXT NOT NULL DEFAULT (datetime('now')),
-  updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS packages (
-  id TEXT PRIMARY KEY,
-  slug TEXT UNIQUE NOT NULL,
-  name TEXT NOT NULL,
-  price INTEGER NOT NULL,
-  duration TEXT,
-  description TEXT NOT NULL,
-  features TEXT NOT NULL DEFAULT '[]',
-  highlighted INTEGER NOT NULL DEFAULT 0,
-  sortOrder INTEGER NOT NULL DEFAULT 0,
-  active INTEGER NOT NULL DEFAULT 1,
-  createdAt TEXT NOT NULL DEFAULT (datetime('now')),
-  updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS branches (
-  id TEXT PRIMARY KEY,
-  slug TEXT UNIQUE NOT NULL,
-  name TEXT NOT NULL,
-  city TEXT NOT NULL,
-  district TEXT,
-  address TEXT NOT NULL,
-  phone TEXT NOT NULL,
-  workingHours TEXT NOT NULL,
-  mapUrl TEXT,
-  sortOrder INTEGER NOT NULL DEFAULT 0,
-  active INTEGER NOT NULL DEFAULT 1,
-  createdAt TEXT NOT NULL DEFAULT (datetime('now')),
-  updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS appointments (
-  id TEXT PRIMARY KEY,
-  trackingCode TEXT UNIQUE NOT NULL,
-  fullName TEXT NOT NULL,
-  phone TEXT NOT NULL,
-  email TEXT,
-  plate TEXT,
-  vehicleBrand TEXT,
-  vehicleModel TEXT,
-  vehicleYear TEXT,
-  branchId TEXT NOT NULL REFERENCES branches(id),
-  packageId TEXT REFERENCES packages(id),
-  serviceType TEXT NOT NULL DEFAULT 'BRANCH',
-  appointmentDate TEXT NOT NULL,
-  timeSlot TEXT NOT NULL,
-  note TEXT,
-  status TEXT NOT NULL DEFAULT 'PENDING',
-  createdAt TEXT NOT NULL DEFAULT (datetime('now')),
-  updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE INDEX IF NOT EXISTS idx_appointments_branch ON appointments(branchId);
-CREATE INDEX IF NOT EXISTS idx_appointments_status ON appointments(status);
-CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(appointmentDate);
-
-CREATE TABLE IF NOT EXISTS campaigns (
-  id TEXT PRIMARY KEY,
-  slug TEXT UNIQUE NOT NULL,
-  title TEXT NOT NULL,
-  description TEXT NOT NULL,
-  badge TEXT,
-  validUntil TEXT,
-  active INTEGER NOT NULL DEFAULT 1,
-  sortOrder INTEGER NOT NULL DEFAULT 0,
-  createdAt TEXT NOT NULL DEFAULT (datetime('now')),
-  updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS testimonials (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  city TEXT,
-  vehicle TEXT,
-  rating INTEGER NOT NULL DEFAULT 5,
-  comment TEXT NOT NULL,
-  active INTEGER NOT NULL DEFAULT 1,
-  sortOrder INTEGER NOT NULL DEFAULT 0,
-  createdAt TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS faqs (
-  id TEXT PRIMARY KEY,
-  question TEXT NOT NULL,
-  answer TEXT NOT NULL,
-  sortOrder INTEGER NOT NULL DEFAULT 0,
-  active INTEGER NOT NULL DEFAULT 1
-);
-
-CREATE TABLE IF NOT EXISTS contactMessages (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  email TEXT NOT NULL,
-  phone TEXT,
-  subject TEXT,
-  message TEXT NOT NULL,
-  isRead INTEGER NOT NULL DEFAULT 0,
-  createdAt TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS siteSettings (
-  id TEXT PRIMARY KEY,
-  brandName TEXT NOT NULL,
-  tagline TEXT NOT NULL,
-  phone TEXT NOT NULL,
-  whatsapp TEXT,
-  email TEXT NOT NULL,
-  address TEXT,
-  heroTitle TEXT NOT NULL,
-  heroSubtitle TEXT NOT NULL,
-  aboutText TEXT NOT NULL,
-  instagramUrl TEXT,
-  facebookUrl TEXT,
-  youtubeUrl TEXT,
-  workingHours TEXT,
-  updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
-);
-`;
-
-function sleepSync(ms: number): void {
-  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
-}
-
-// Several processes (e.g. Next's build/dev workers) can import this module
-// at nearly the same time on a fresh checkout. Racing to create the SQLite
-// file, set its journal mode, and seed it concurrently is unreliable (SQLite
-// can report "database is locked" for the very first writes to a brand new
-// file even with busy_timeout set). A plain exclusive-create lockfile makes
-// only one process run initialization at a time; the rest wait for it to
-// finish, then just open the already-initialized database.
-function withInitLock<T>(fn: () => T): T {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  const start = Date.now();
-  let ownLock = false;
-  while (!ownLock) {
-    try {
-      fs.closeSync(fs.openSync(LOCK_PATH, "wx"));
-      ownLock = true;
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
-      if (Date.now() - start > 10_000) break; // give up waiting, proceed anyway
-      sleepSync(50);
-    }
+  if (url.startsWith("file:")) {
+    const filePath = url.slice("file:".length);
+    fs.mkdirSync(path.dirname(path.resolve(process.cwd(), filePath)), { recursive: true });
   }
-  try {
-    return fn();
-  } finally {
-    if (ownLock) {
-      try {
-        fs.unlinkSync(LOCK_PATH);
-      } catch {
-        // already removed
-      }
-    }
-  }
-}
 
-function createConnection(): DatabaseSync {
-  return withInitLock(() => {
-    const database = new DatabaseSync(DB_PATH);
-    database.exec("PRAGMA busy_timeout = 5000;");
-    database.exec("PRAGMA journal_mode = WAL;");
-    database.exec("PRAGMA foreign_keys = ON;");
-    database.exec(SCHEMA_SQL);
-
-    const { count } = database
-      .prepare("SELECT COUNT(*) as count FROM services")
-      .get() as { count: number };
-    if (count === 0) {
-      seedDatabase(database);
-    }
-
-    return database;
-  });
+  return createClient({ url, authToken });
 }
 
 declare global {
-  var __appDb: DatabaseSync | undefined;
+  var __appDbClient: Client | undefined;
+  var __appDbInit: Promise<void> | undefined;
 }
 
-export const db = globalThis.__appDb ?? (globalThis.__appDb = createConnection());
+const client = globalThis.__appDbClient ?? (globalThis.__appDbClient = createDbClient());
+
+async function initialize(): Promise<void> {
+  for (const statement of SCHEMA_STATEMENTS) {
+    await client.execute(statement);
+  }
+
+  const { rows } = await client.execute("SELECT COUNT(*) as count FROM services");
+  const count = Number(rows[0]?.count ?? 0);
+  if (count === 0) {
+    try {
+      // A single batched transaction: if another cold-starting instance
+      // races us and seeds first, our insert of the unique admin email (or
+      // any other unique column) fails and the whole batch rolls back —
+      // we just swallow that, the data is already there.
+      await client.batch(seedStatements(), "write");
+    } catch {
+      // already seeded by a concurrent instance — nothing to do
+    }
+  }
+}
+
+async function ensureReady(): Promise<void> {
+  if (!globalThis.__appDbInit) {
+    globalThis.__appDbInit = initialize();
+  }
+  await globalThis.__appDbInit;
+}
+
+export type Row = Record<string, unknown>;
+
+function toRows(rawRows: unknown[], columns: string[]): Row[] {
+  return rawRows.map((row) => {
+    const arr = row as unknown[];
+    const obj: Row = {};
+    columns.forEach((col, i) => {
+      obj[col] = arr[i];
+    });
+    return obj;
+  });
+}
+
+export async function queryAll(sql: string, args: InArgs = []): Promise<Row[]> {
+  await ensureReady();
+  const result = await client.execute({ sql, args });
+  return toRows(result.rows as unknown[], result.columns);
+}
+
+export async function queryOne(sql: string, args: InArgs = []): Promise<Row | null> {
+  const rows = await queryAll(sql, args);
+  return rows[0] ?? null;
+}
+
+export async function execute(sql: string, args: InArgs = []): Promise<void> {
+  await ensureReady();
+  await client.execute({ sql, args });
+}
+
+export async function batchWrite(statements: InStatement[]): Promise<void> {
+  await ensureReady();
+  await client.batch(statements, "write");
+}

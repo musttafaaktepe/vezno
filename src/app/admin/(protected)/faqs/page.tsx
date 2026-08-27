@@ -10,7 +10,7 @@ import { deleteFaqAction } from "./actions";
 export const metadata: Metadata = { title: "S.S.S." };
 
 export default async function AdminFaqsPage() {
-  const faqs = listFaqs();
+  const faqs = await listFaqs();
 
   return (
     <div>

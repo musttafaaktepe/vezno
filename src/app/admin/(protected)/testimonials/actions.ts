@@ -30,7 +30,7 @@ function revalidateTestimonialPaths(): void {
 
 export async function createTestimonialAction(formData: FormData): Promise<void> {
   await requireAdminSession();
-  createTestimonial(readInput(formData));
+  await createTestimonial(readInput(formData));
   revalidateTestimonialPaths();
   redirect("/admin/testimonials");
 }
@@ -39,7 +39,7 @@ export async function updateTestimonialAction(formData: FormData): Promise<void>
   await requireAdminSession();
   const id = formData.get("id")?.toString() ?? "";
   if (!id) return;
-  updateTestimonial(id, readInput(formData));
+  await updateTestimonial(id, readInput(formData));
   revalidateTestimonialPaths();
   redirect("/admin/testimonials");
 }
@@ -48,7 +48,7 @@ export async function deleteTestimonialAction(formData: FormData): Promise<void>
   await requireAdminSession();
   const id = formData.get("id")?.toString() ?? "";
   if (!id) return;
-  deleteTestimonial(id);
+  await deleteTestimonial(id);
   revalidateTestimonialPaths();
   redirect("/admin/testimonials");
 }

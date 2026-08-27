@@ -17,8 +17,10 @@ export default async function BookingPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const branches = listBranches({ onlyActive: true });
-  const packages = listPackages({ onlyActive: true });
+  const [branches, packages] = await Promise.all([
+    listBranches({ onlyActive: true }),
+    listPackages({ onlyActive: true }),
+  ]);
 
   return (
     <>

@@ -10,7 +10,7 @@ import { deleteTestimonialAction } from "./actions";
 export const metadata: Metadata = { title: "Yorumlar" };
 
 export default async function AdminTestimonialsPage() {
-  const testimonials = listTestimonials();
+  const testimonials = await listTestimonials();
 
   return (
     <div>

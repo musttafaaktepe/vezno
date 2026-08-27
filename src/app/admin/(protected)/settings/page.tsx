@@ -5,8 +5,8 @@ import SettingsForm from "./SettingsForm";
 
 export const metadata: Metadata = { title: "Site Ayarları" };
 
-export default function AdminSettingsPage() {
-  const settings = getSiteSettings();
+export default async function AdminSettingsPage() {
+  const settings = await getSiteSettings();
 
   return (
     <div>

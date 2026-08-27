@@ -10,7 +10,7 @@ import { deleteCampaignAction } from "./actions";
 export const metadata: Metadata = { title: "Kampanyalar" };
 
 export default async function AdminCampaignsPage() {
-  const campaigns = listCampaigns();
+  const campaigns = await listCampaigns();
 
   return (
     <div>

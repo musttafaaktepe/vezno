@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   description: "OtoVizör Ekspertiz hakkında merak edilen soruların cevapları.",
 };
 
-export default function FaqPage() {
-  const faqs = listFaqs({ onlyActive: true });
+export default async function FaqPage() {
+  const faqs = await listFaqs({ onlyActive: true });
 
   return (
     <>

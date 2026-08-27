@@ -19,11 +19,11 @@ export default async function AdminAppointmentDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const appointment = getAppointmentById(id);
+  const appointment = await getAppointmentById(id);
   if (!appointment) notFound();
 
-  const branch = getBranchById(appointment.branchId);
-  const pkg = appointment.packageId ? getPackageById(appointment.packageId) : null;
+  const branch = await getBranchById(appointment.branchId);
+  const pkg = appointment.packageId ? await getPackageById(appointment.packageId) : null;
 
   return (
     <div>

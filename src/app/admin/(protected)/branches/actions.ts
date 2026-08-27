@@ -27,7 +27,7 @@ function revalidateBranchPaths(): void {
 
 export async function createBranchAction(formData: FormData): Promise<void> {
   await requireAdminSession();
-  createBranch(readInput(formData));
+  await createBranch(readInput(formData));
   revalidateBranchPaths();
   redirect("/admin/branches");
 }
@@ -36,7 +36,7 @@ export async function updateBranchAction(formData: FormData): Promise<void> {
   await requireAdminSession();
   const id = formData.get("id")?.toString() ?? "";
   if (!id) return;
-  updateBranch(id, readInput(formData));
+  await updateBranch(id, readInput(formData));
   revalidateBranchPaths();
   redirect("/admin/branches");
 }
@@ -45,7 +45,7 @@ export async function deleteBranchAction(formData: FormData): Promise<void> {
   await requireAdminSession();
   const id = formData.get("id")?.toString() ?? "";
   if (!id) return;
-  deleteBranch(id);
+  await deleteBranch(id);
   revalidateBranchPaths();
   redirect("/admin/branches");
 }

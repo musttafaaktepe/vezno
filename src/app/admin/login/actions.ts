@@ -20,7 +20,7 @@ export async function loginAction(
     return { error: "E-posta ve şifre zorunludur." };
   }
 
-  const user = getAdminUserByEmail(email);
+  const user = await getAdminUserByEmail(email);
   if (!user || !verifyPassword(password, user.passwordHash)) {
     return { error: "E-posta veya şifre hatalı." };
   }
