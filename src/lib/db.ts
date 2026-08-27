@@ -135,9 +135,18 @@ const SCHEMA_STATEMENTS: string[] = [
 ];
 
 function createDbClient(): Client {
+  if (process.env.VERCEL && !process.env.TURSO_DATABASE_URL) {
+    // On Vercel the project directory is read-only, so the local-file
+    // fallback below would crash trying to create it — fail with a clear
+    // message instead of a confusing mkdir stack trace.
+    throw new Error(
+      "TURSO_DATABASE_URL tanımlı değil. Vercel projesinde Settings → Environment Variables " +
+        "kısmına TURSO_DATABASE_URL ve TURSO_AUTH_TOKEN eklenip yeniden deploy edilmesi gerekiyor.",
+    );
+  }
+
   // Falls back to a local libSQL file when no Turso credentials are set, so
-  // local development doesn't require a Turso account. Production (Vercel)
-  // always sets TURSO_DATABASE_URL, which points at the real hosted database.
+  // local development doesn't require a Turso account.
   const url = process.env.TURSO_DATABASE_URL ?? "file:./data/app.db";
   const authToken = process.env.TURSO_AUTH_TOKEN;
 
