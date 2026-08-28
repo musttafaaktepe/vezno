@@ -17,6 +17,7 @@ function mapRow(row: Row): SiteSettings {
     facebookUrl: (row.facebookUrl as string | null) ?? null,
     youtubeUrl: (row.youtubeUrl as string | null) ?? null,
     workingHours: (row.workingHours as string | null) ?? null,
+    mapsUrl: (row.mapsUrl as string | null) ?? null,
     updatedAt: row.updatedAt as string,
   };
 }
@@ -40,11 +41,12 @@ export interface SiteSettingsInput {
   facebookUrl?: string | null;
   youtubeUrl?: string | null;
   workingHours?: string | null;
+  mapsUrl?: string | null;
 }
 
 export async function updateSiteSettings(input: SiteSettingsInput): Promise<SiteSettings> {
   await execute(
-    `UPDATE siteSettings SET brandName = ?, tagline = ?, phone = ?, whatsapp = ?, email = ?, address = ?, heroTitle = ?, heroSubtitle = ?, aboutText = ?, instagramUrl = ?, facebookUrl = ?, youtubeUrl = ?, workingHours = ?, updatedAt = datetime('now') WHERE id = 'main'`,
+    `UPDATE siteSettings SET brandName = ?, tagline = ?, phone = ?, whatsapp = ?, email = ?, address = ?, heroTitle = ?, heroSubtitle = ?, aboutText = ?, instagramUrl = ?, facebookUrl = ?, youtubeUrl = ?, workingHours = ?, mapsUrl = ?, updatedAt = datetime('now') WHERE id = 'main'`,
     [
       input.brandName,
       input.tagline,
@@ -59,6 +61,7 @@ export async function updateSiteSettings(input: SiteSettingsInput): Promise<Site
       input.facebookUrl ?? null,
       input.youtubeUrl ?? null,
       input.workingHours ?? null,
+      input.mapsUrl ?? null,
     ],
   );
   return getSiteSettings();

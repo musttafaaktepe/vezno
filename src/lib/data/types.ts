@@ -125,6 +125,7 @@ export interface SiteSettings {
   facebookUrl: string | null;
   youtubeUrl: string | null;
   workingHours: string | null;
+  mapsUrl: string | null;
   updatedAt: string;
 }
 

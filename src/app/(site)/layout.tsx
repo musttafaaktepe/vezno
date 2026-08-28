@@ -4,6 +4,7 @@ import { listBranches } from "@/lib/data/branches";
 import Header from "./_components/Header";
 import Footer from "./_components/Footer";
 import WhatsAppButton from "./_components/WhatsAppButton";
+import DirectionsButton from "./_components/DirectionsButton";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const [settings, services, branches] = await Promise.all([
@@ -18,6 +19,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <main className="flex-1">{children}</main>
       <Footer settings={settings} services={services} branches={branches} />
       <WhatsAppButton whatsapp={settings.whatsapp} />
+      <DirectionsButton mapsUrl={settings.mapsUrl} />
     </>
   );
 }

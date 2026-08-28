@@ -130,9 +130,16 @@ const SCHEMA_STATEMENTS: string[] = [
     facebookUrl TEXT,
     youtubeUrl TEXT,
     workingHours TEXT,
+    mapsUrl TEXT,
     updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
   )`,
 ];
+
+// Columns added after the initial release. CREATE TABLE IF NOT EXISTS above
+// only applies to brand-new databases, so an already-existing siteSettings
+// table needs this to actually gain the column. Each statement is run once;
+// "duplicate column" errors (already migrated) are expected and ignored.
+const MIGRATIONS: string[] = [`ALTER TABLE siteSettings ADD COLUMN mapsUrl TEXT`];
 
 function createDbClient(): Client {
   if (process.env.VERCEL && !process.env.TURSO_DATABASE_URL) {
@@ -169,6 +176,22 @@ async function initialize(): Promise<void> {
   for (const statement of SCHEMA_STATEMENTS) {
     await client.execute(statement);
   }
+
+  for (const statement of MIGRATIONS) {
+    try {
+      await client.execute(statement);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!message.toLowerCase().includes("duplicate column")) throw error;
+    }
+  }
+
+  // One-time backfill for databases that existed before mapsUrl was added:
+  // only fills it in if it's still unset, so it never overwrites a value
+  // entered later through the admin settings page.
+  await client.execute(
+    `UPDATE siteSettings SET mapsUrl = 'https://maps.app.goo.gl/sCbBTpA5TG8GZEQX6' WHERE id = 'main' AND mapsUrl IS NULL`,
+  );
 
   const { rows } = await client.execute("SELECT COUNT(*) as count FROM services");
   const count = Number(rows[0]?.count ?? 0);
