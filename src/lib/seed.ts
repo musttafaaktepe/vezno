@@ -324,7 +324,7 @@ export function seedStatements(): InStatement[] {
   );
 
   statements.push({
-    sql: `INSERT INTO siteSettings (id, brandName, tagline, phone, whatsapp, email, address, heroTitle, heroSubtitle, aboutText, workingHours) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO siteSettings (id, brandName, tagline, phone, whatsapp, email, address, heroTitle, heroSubtitle, aboutText, workingHours, mapsUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       "main",
       "Cesa Oto Ekspertiz",
@@ -337,6 +337,7 @@ export function seedStatements(): InStatement[] {
       "Bağımsız ve tarafsız oto ekspertiz hizmeti. Şubelerimizde ya da bulunduğunuz yerde, 120'den fazla noktadan detaylı kontrol ile aracın gerçek durumunu öğrenin.",
       "Cesa Oto Ekspertiz, ikinci el araç alım-satımında güvenilir karar verebilmeniz için 2011'den bu yana bağımsız ekspertiz hizmeti sunuyor. Alanında uzman eksperlerimiz ve son teknoloji ölçüm cihazlarımızla, her aracı 120'den fazla kontrol noktasından geçiriyor, sonucu tarafsız ve anlaşılır bir raporla elinize ulaştırıyoruz. Amacımız; sizi yalnızca bir rapor değil, doğru bir karar ile baş başa bırakmak.",
       "Hafta içi 08:30-19:00, Cumartesi 09:00-17:00, Pazar kapalı",
+      "https://maps.app.goo.gl/sCbBTpA5TG8GZEQX6",
     ],
   });
 

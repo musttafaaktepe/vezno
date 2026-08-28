@@ -29,6 +29,7 @@ export async function updateSiteSettingsAction(
     facebookUrl: formData.get("facebookUrl")?.toString().trim() || null,
     youtubeUrl: formData.get("youtubeUrl")?.toString().trim() || null,
     workingHours: formData.get("workingHours")?.toString().trim() || null,
+    mapsUrl: formData.get("mapsUrl")?.toString().trim() || null,
   };
 
   await updateSiteSettings(input);

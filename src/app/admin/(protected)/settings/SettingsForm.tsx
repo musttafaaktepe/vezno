@@ -125,6 +125,21 @@ export default function SettingsForm({ settings }: { settings: SiteSettings }) {
               className={textareaClass}
             />
           </div>
+          <div className="flex flex-col gap-1.5 sm:col-span-2">
+            <label className={labelClass} htmlFor="mapsUrl">
+              Google Haritalar Linki
+            </label>
+            <input
+              id="mapsUrl"
+              name="mapsUrl"
+              placeholder="https://maps.app.goo.gl/..."
+              defaultValue={settings.mapsUrl ?? ""}
+              className={inputClass}
+            />
+            <p className="text-xs text-slate-500">
+              Sitede sağ altta beliren &quot;Yol Tarifi&quot; butonu bu linke yönlendirir.
+            </p>
+          </div>
         </div>
       </div>
 
