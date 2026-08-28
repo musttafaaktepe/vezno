@@ -1,5 +1,14 @@
 import Link from "next/link";
-import { ArrowRight, CalendarCheck, ClipboardCheck, FileCheck2, MapPin, Star } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarCheck,
+  ChevronRight,
+  ClipboardCheck,
+  ExternalLink,
+  FileCheck2,
+  MapPin,
+  Star,
+} from "lucide-react";
 import { getSiteSettings } from "@/lib/data/settings";
 import { listServices } from "@/lib/data/services";
 import { listPackages } from "@/lib/data/packages";
@@ -21,6 +30,33 @@ export default async function HomePage() {
     listFaqs({ onlyActive: true }),
   ]);
   const faqs = allFaqs.slice(0, 5);
+
+  const quickLinks: { label: string; href: string; external?: boolean }[] = [
+    { label: "Randevu Al", href: "/randevu-al" },
+    { label: "Randevu Sorgula", href: "/randevu-sorgula" },
+    { label: "Fiyat Listesi", href: "/paketler" },
+    {
+      label: "Araç Muayene Randevusu",
+      href: "https://reservation.tuvturk.com.tr/web.ui/Index.aspx",
+      external: true,
+    },
+    {
+      label: "Taşıt Vergisi Ödeme",
+      href: "https://dijital.gib.gov.tr/hizliOdemeler/MTVTPCOdeme",
+      external: true,
+    },
+    { label: "Vergi Borcu Sorgulama", href: "https://dijital.gib.gov.tr/", external: true },
+    {
+      label: "Nöbetçi Noter",
+      href: "https://portal.tnb.org.tr/Sayfalar/NobetciNoterBul.aspx",
+      external: true,
+    },
+    {
+      label: "Trafik İhlali Sorgulama",
+      href: "https://webihlaltakip.kgm.gov.tr/WebIhlalSorgulama/Sayfalar/Sorgulama",
+      external: true,
+    },
+  ];
 
   return (
     <>
@@ -81,6 +117,34 @@ export default async function HomePage() {
           </Container>
         </div>
       )}
+
+      {/* Quick links */}
+      <Section className="bg-slate-50 !py-12">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {quickLinks.map((link) => {
+            const cardClass =
+              "group flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-blue-300 hover:shadow-md";
+            const content = (
+              <>
+                <span className="flex items-center gap-1.5">
+                  {link.label}
+                  {link.external && <ExternalLink className="h-3 w-3 text-slate-400" />}
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-600" />
+              </>
+            );
+            return link.external ? (
+              <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer" className={cardClass}>
+                {content}
+              </a>
+            ) : (
+              <Link key={link.label} href={link.href} className={cardClass}>
+                {content}
+              </Link>
+            );
+          })}
+        </div>
+      </Section>
 
       {/* Services */}
       <Section>
